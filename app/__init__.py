@@ -4,7 +4,8 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
-# Подготовка контекстов для приложения
+
+# Подготовка экземпляров для приложения
 db = SQLAlchemy()
 migrate = Migrate()
 login = LoginManager()
@@ -13,7 +14,7 @@ login.login_message = 'Please log in to access this page.'
 
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
+    app = Flask(__name__, static_url_path='/static')
     app.config.from_object(config_class)
     # Регистрация blueprint
     from app.main import bp
@@ -21,11 +22,11 @@ def create_app(config_class=Config):
     from app.auth import bp
     app.register_blueprint(bp)
 
-    # Связка контекстов с приложением
+    # Связка экземпляров с приложением
     db.init_app(app)
     login.init_app(app)
     migrate.init_app(app, db)
     return app
 
 
-from app import models
+from app.models import models
