@@ -1,9 +1,9 @@
-from config import Config
-from flask import Flask, request, current_app
+from flask import Flask, current_app, request
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
+from config import Config
 
 # Подготовка экземпляров для приложения
 db = SQLAlchemy()
@@ -21,12 +21,12 @@ def create_app(config_class=Config):
     app.register_blueprint(bp)
     from app.auth import bp
     app.register_blueprint(bp)
-
+    from app.admin import bp
+    app.register_blueprint(bp)
     # Связка экземпляров с приложением
     db.init_app(app)
     login.init_app(app)
     migrate.init_app(app, db)
     return app
-
 
 from app.models import models

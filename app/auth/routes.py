@@ -27,7 +27,7 @@ def login():
             next_page = url_for('main.index')
         return redirect(next_page)
     # Попробовать убрать form = form'
-    return render_template('auth/login.html', form=form)    
+    return render_template('auth/login.html', form=form)
 
 
 @bp.route('/register', methods=('GET', 'POST'))
