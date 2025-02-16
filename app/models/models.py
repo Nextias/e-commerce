@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from hashlib import md5
 from time import time
 from typing import Optional
@@ -28,6 +28,21 @@ categories = sa.Table(
               primary_key=True)
 )
 
+order_products = sa.Table(
+    'order_products',
+    db.metadata,
+    sa.Column('order_id', sa.Integer, sa.ForeignKey('order.id'),
+              primary_key=True),
+    sa.Column('product_id', sa.Integer, sa.ForeignKey('product.id'),
+              primary_key=True),
+)
+
+
+class Role(db.Model):
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    name: so.Mapped[str] = so.mapped_column(sa.String(20), index=True)
+    users: so.Mapped['User'] = so.relationship(back_populates='role')
+
 
 class User(UserMixin, db.Model):
     """ Модель БД таблица user"""
@@ -45,9 +60,13 @@ class User(UserMixin, db.Model):
     address: so.Mapped[Optional[str]] = so.mapped_column(sa.String(60))
     created_at: so.Mapped[Optional[datetime]] = so.mapped_column(
         default=lambda: datetime.now(timezone.utc))
-
     last_seen: so.Mapped[Optional[datetime]] = so.mapped_column(
         default=lambda: datetime.now(timezone.utc))
+    role_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Role.id),
+                                               index=True)
+    role: so.Mapped[Role] = so.relationship(back_populates='users')
+    user_orders: so.Mapped['Order'] = so.relationship(
+        back_populates='customer')
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -57,6 +76,10 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def set_role(self, role='user'):
+        query = sa.select(Role).where(Role.name == role)
+        self.role_id = db.session.scalar(query).id
 
     def avatar(self, size):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()
@@ -72,9 +95,18 @@ class Product(db.Model):
     photo_path: so.Mapped[Optional[str]] = so.mapped_column(sa.String(64))
     categories: so.WriteOnlyMapped['Category'] = so.relationship(
         secondary=categories,
-        primaryjoin="Product.id == categories.c.product_id",
-        secondaryjoin="Category.id == categories.c.category_id",
+        primaryjoin='Product.id == categories.c.product_id',
+        secondaryjoin='Category.id == categories.c.category_id',
         back_populates='products')
+    orders: so.WriteOnlyMapped['Order'] = so.relationship(
+        secondary=order_products,
+        back_populates='products'
+    )
+    # orders: so.WriteOnlyMapped['Product'] = so.relationship(
+    #     secondary=order_products,
+    #     primaryjoin='Product.id == order_products.c.product_id',
+    #     secondaryjoin='Order.id == order_products.c.order_id',
+    #     back_populates='products')
 
     def get_categories(self):
         query = self.categories.select()
@@ -92,16 +124,43 @@ class Category(db.Model):
     name: so.Mapped[str] = so.mapped_column(sa.String(64), index=True)
     products: so.WriteOnlyMapped['Product'] = so.relationship(
         secondary=categories,
-        primaryjoin="Category.id == categories.c.category_id",
-        secondaryjoin="Product.id == categories.c.product_id",
+        primaryjoin='Category.id == categories.c.category_id',
+        secondaryjoin='Product.id == categories.c.product_id',
         back_populates='categories')
 
     def get_products(self):
         query = self.products.select()
         return db.session.scalars(query)
-    
+
     def __repr__(self):
         return '<Category {}>'.format(self.name)
+
+
+class Order(db.Model):
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    order_number: so.Mapped[int] = so.mapped_column(unique=True, index=True)
+    created_at: so.Mapped[Optional[datetime]] = so.mapped_column(
+        default=lambda: datetime.now(timezone.utc))
+    shipment_date: so.Mapped[Optional[date]] = so.mapped_column()
+    status: so.Mapped[str] = so.mapped_column(sa.String(10))
+    address: so.Mapped[Optional[str]] = so.mapped_column(sa.String(60))
+    total_amount: so.Mapped[int] = so.mapped_column()
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
+                                               index=True)
+
+    products: so.WriteOnlyMapped['Product'] = so.relationship(
+        secondary=order_products,
+        back_populates='orders'
+    )
+    # products: so.WriteOnlyMapped['Product'] = so.relationship(
+    #     secondary=order_products,
+    #     primaryjoin='Order.id == order_products.c.order_id',
+    #     secondaryjoin='Product.id == order_products.c.product_id',
+    #     back_populates='orders')
+    customer: so.Mapped[User] = so.relationship(back_populates='user_orders')
+
+    def generate_order_number(self):
+        pass
 
 
 @login.user_loader
