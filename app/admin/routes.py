@@ -3,6 +3,7 @@ from urllib.parse import urlsplit
 import sqlalchemy as sa
 from flask import flash, redirect, render_template, request, url_for, abort
 from flask_login import current_user, login_required, login_user, logout_user
+from functools import wraps
 
 from app import db
 from app.admin import bp
@@ -11,6 +12,7 @@ from app.models import User, Role
 
 
 def admin_only(f):
+    @wraps(f)
     def wrapper(*args, **kwargs):
         admin_role = db.session.scalar(
             sa.select(Role).where(Role.name == 'admin'))
@@ -25,4 +27,4 @@ def admin_only(f):
 @login_required
 @admin_only
 def admin():
-    return 'heeeey'
+    return render_template('admin/admin.html')

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, date
 from hashlib import md5
 from time import time
-from typing import Optional
+from typing import Optional, List
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 from flask import current_app
@@ -10,14 +10,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # import jwt
 from app import db, login
 
-# wishlist = sa.Table(
-#     'wishlist',
-#     db.metadata,
-#     sa.Column('user_id', sa.Integer, sa.ForeignKey('user.id'),
-#               primary_key=True),
-#     sa.Column('product_id', sa.Integer, sa.ForeignKey('product.id'),
-#               primary_key=True)
-# )
 
 categories = sa.Table(
     'categories',
@@ -41,7 +33,7 @@ order_products = sa.Table(
 class Role(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     name: so.Mapped[str] = so.mapped_column(sa.String(20), index=True)
-    users: so.Mapped['User'] = so.relationship(back_populates='role')
+    users: so.Mapped[List['User']] = so.relationship(back_populates='role')
 
 
 class User(UserMixin, db.Model):
@@ -65,7 +57,7 @@ class User(UserMixin, db.Model):
     role_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Role.id),
                                                index=True)
     role: so.Mapped[Role] = so.relationship(back_populates='users')
-    user_orders: so.Mapped['Order'] = so.relationship(
+    user_orders: so.Mapped[List['Order']] = so.relationship(
         back_populates='customer')
 
     def __repr__(self):
@@ -81,6 +73,10 @@ class User(UserMixin, db.Model):
         query = sa.select(Role).where(Role.name == role)
         self.role_id = db.session.scalar(query).id
 
+    # def get_orders(self):
+    #     query = self.user_orders.select().order_by(Order.id)
+    #     return db.session.scalars(query)
+
     def avatar(self, size):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
@@ -93,24 +89,15 @@ class Product(db.Model):
     description: so.Mapped[str] = so.mapped_column(sa.String(140))
     price: so.Mapped[int] = so.mapped_column()
     photo_path: so.Mapped[Optional[str]] = so.mapped_column(sa.String(64))
-    categories: so.WriteOnlyMapped['Category'] = so.relationship(
+    categories: so.Mapped[List['Category']] = so.relationship(
         secondary=categories,
         primaryjoin='Product.id == categories.c.product_id',
         secondaryjoin='Category.id == categories.c.category_id',
         back_populates='products')
-    orders: so.WriteOnlyMapped['Order'] = so.relationship(
+    orders: so.Mapped[List['Order']] = so.relationship(
         secondary=order_products,
         back_populates='products'
     )
-    # orders: so.WriteOnlyMapped['Product'] = so.relationship(
-    #     secondary=order_products,
-    #     primaryjoin='Product.id == order_products.c.product_id',
-    #     secondaryjoin='Order.id == order_products.c.order_id',
-    #     back_populates='products')
-
-    def get_categories(self):
-        query = self.categories.select()
-        return db.session.scalars(query)
 
     def __repr__(self):
         return '<Product {}>'.format(self.name)
@@ -122,7 +109,7 @@ class Product(db.Model):
 class Category(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     name: so.Mapped[str] = so.mapped_column(sa.String(64), index=True)
-    products: so.WriteOnlyMapped['Product'] = so.relationship(
+    products: so.Mapped[List['Product']] = so.relationship(
         secondary=categories,
         primaryjoin='Category.id == categories.c.category_id',
         secondaryjoin='Product.id == categories.c.product_id',
@@ -148,15 +135,10 @@ class Order(db.Model):
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
                                                index=True)
 
-    products: so.WriteOnlyMapped['Product'] = so.relationship(
+    products: so.Mapped[List['Product']] = so.relationship(
         secondary=order_products,
         back_populates='orders'
     )
-    # products: so.WriteOnlyMapped['Product'] = so.relationship(
-    #     secondary=order_products,
-    #     primaryjoin='Order.id == order_products.c.order_id',
-    #     secondaryjoin='Product.id == order_products.c.product_id',
-    #     back_populates='orders')
     customer: so.Mapped[User] = so.relationship(back_populates='user_orders')
 
     def generate_order_number(self):

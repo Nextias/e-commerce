@@ -26,7 +26,6 @@ def login():
         if not next_page or urlsplit(next_page).netloc != '':
             next_page = url_for('main.index')
         return redirect(next_page)
-    # Попробовать убрать form = form'
     return render_template('auth/login.html', form=form)
 
 
@@ -46,7 +45,6 @@ def register():
         db.session.commit()
         flash('You sucessfully registered!')
         return redirect(url_for('auth.login'))
-    # Попробовать убрать form = form
     return render_template('auth/register.html', form=form)
 
 

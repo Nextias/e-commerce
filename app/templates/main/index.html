@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
 {% if current_user.is_authenticated %}
-  Hi {{ current_user.username }}!
+<h2>Hi {{ current_user.username }}!</h2>
 {% else %} Hello, stranger!
+{% endif %}
+{% if orders %}
+<h4>Your orders: </h4>
+{% include "main/_orders.html" %}
 {% endif %}
 {% endblock %}
