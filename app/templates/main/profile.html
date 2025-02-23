@@ -1,4 +1,8 @@
 {% extends "base.html" %}
+{% block before_body_scripts %}
+<script src="{{ url_for('static',filename='add_item.js') }}"></script>
+<script src="{{ url_for('static',filename='remove_item.js') }}"></script>
+{% endblock %}
 {% block content %}
 <h1> Profile </h1>
 {% endblock %}

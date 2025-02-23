@@ -29,6 +29,15 @@ order_products = sa.Table(
               primary_key=True),
 )
 
+backet_products = sa.Table(
+    'backet_products',
+    db.metadata,
+    sa.Column('backet_id', sa.Integer, sa.ForeignKey('backet.id'),
+              primary_key=True),
+    sa.Column('product_id', sa.Integer, sa.ForeignKey('product.id'),
+              primary_key=True),
+)
+
 
 class Role(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
@@ -98,6 +107,10 @@ class Product(db.Model):
         secondary=order_products,
         back_populates='products'
     )
+    backets: so.Mapped[List['Backet']] = so.relationship(
+        secondary=backet_products,
+        back_populates='products'
+    )
 
     def __repr__(self):
         return '<Product {}>'.format(self.name)
@@ -143,6 +156,17 @@ class Order(db.Model):
 
     def generate_order_number(self):
         pass
+
+
+class Backet(db.Model):
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
+                                               index=True)
+    active: so.Mapped[str] = so.mapped_column(sa.Boolean, default=True)
+    products: so.Mapped[List['Product']] = so.relationship(
+        secondary=backet_products,
+        back_populates='backets'
+    )
 
 
 @login.user_loader
