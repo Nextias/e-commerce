@@ -1,14 +1,39 @@
-document.getElementById('cart-items').addEventListener('click', async (event) => {
-    if (event.target.classList.contains('remove-item')) {
-        const itemId = event.target.dataset.itemId;
-        try {
-            const response = await fetch(`/remove_item/${itemId}`, { method: 'POST' });
-            const data = await response.json();
-            if (data.success) {
-                document.querySelector(`.cart-item[data-item-id="${itemId}"]`).remove();
-            }
-        } catch (error) {
-            alert('Failed to remove item.');
+// Function to update the product amount
+async function remove_product(productId, elementId, parentId) {
+    try {
+        // Send the product ID to the API
+        const response = await fetch(`/backet/remove_product/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch updated product amount');
         }
+        // Parse the response JSON
+        const data = await response.json();
+        // Get the new amount from the API response
+        const newAmount = data.amount;
+        // Update the amount displayed on the webpage
+        const amountElement = document.getElementById(elementId);
+        if (amountElement) {
+            if (newAmount > 0){
+            amountElement.textContent = newAmount;
+            }
+            else{
+                if (document.URL.includes('backet')){
+                    parentElement = document.getElementById(parentId)
+                    parentElement.remove()
+                }
+                else{
+                    amountElement.textContent = ''
+                }
+            }
+        } else {
+            console.error('Element not found');
+        }
+    } catch (error) {
+        console.error('Error updating product amount:', error);
     }
-});
+}

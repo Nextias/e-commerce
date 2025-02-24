@@ -1,18 +1,34 @@
-document.getElementById('add-item').addEventListener('click', async () => {
+// Function to update the product amount
+async function add_product(productId, elementId, parentId) {
     try {
-        const response = await fetch(`/add_item/${itemId}`, { method: 'POST' });
+        // Send the product ID to the API
+        const response = await fetch(`/backet/add_product/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch updated product amount');
+        }
+        // Parse the response JSON
         const data = await response.json();
-        if (data.success) {
-            const newItem = data.item;
-            document.getElementById('cart-items').insertAdjacentHTML('beforeend', `
-                <div class="cart-item" data-item-id="${newItem.id}">
-                    <span class="item-name">${newItem.name}</span>
-                    <span class="item-price">${newItem.price}</span>
-                    <button class="remove-item" data-item-id="${newItem.id}">Remove</button>
-                </div>
-            `);
+        // Get the new amount from the API response
+        const newAmount = data.amount;
+        // Update the amount displayed on the webpage
+        const amountElement = document.getElementById(elementId);
+        if (amountElement) {
+            if (newAmount > 0){
+            amountElement.textContent = newAmount;
+            }
+            else{
+                parentElement = document.getElementById(parentId)
+                parentElement.remove()
+            }
+        } else {
+            console.error('Element not found');
         }
     } catch (error) {
-        alert('Failed to add item.');
+        console.error('Error updating product amount:', error);
     }
-});
+}

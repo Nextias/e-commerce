@@ -1,3 +1,7 @@
+<div class="list-group">
+    <div class="list-group">
+{% if products %}
+{% for product in products %}
 <div class="list-group-item">
     <div class="d-flex w-100 justify-content-between">
         <a href="{{ url_for('main.product', id=product.id) }}">
@@ -6,4 +10,7 @@
     </div>
     <p class="mb-1">Price: {{product.price}}</p>
     <small></small>
+</div>
+{% endfor%}
+{% endif %}
 </div>

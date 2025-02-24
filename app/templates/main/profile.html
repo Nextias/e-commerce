@@ -1,8 +1,75 @@
 {% extends "base.html" %}
+{% block head_container %}
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    .profile-card {
+        margin-top: 50px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+    .profile-img {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 20px;
+    }
+    .profile-info {
+        text-align: center;
+    }
+    .profile-info h2 {
+        margin-bottom: 10px;
+        font-size: 24px;
+        font-weight: bold;
+    }
+    .profile-info p {
+        color: #666;
+        font-size: 16px;
+    }
+    .profile-details {
+        margin-top: 30px;
+    }
+    .profile-details h4 {
+        margin-bottom: 20px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    .profile-details ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    .profile-details ul li {
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+</style>
+{% endblock%}
 {% block before_body_scripts %}
-<script src="{{ url_for('static',filename='add_item.js') }}"></script>
-<script src="{{ url_for('static',filename='remove_item.js') }}"></script>
 {% endblock %}
 {% block content %}
-<h1> Profile </h1>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="profile-card">
+                <p>Username: {{ current_user.username}}</p>
+                <hr>
+                <p>Email: {{ current_user.email }} </p>
+                <p>Name: {{ current_user.first_name }} {{ current_user.last_name }}
+                <p>Phone number: {{ current_user.phone_number}}
+                <p>Address: {{ current_user.address}}
+                <p>About me: {{ current_user.about_me }}
+                <hr>
+                <div class="profile-info">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVhRlq7ZB5GlBrt-HE6rMc9LtiSjucs_KNjQ&s">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

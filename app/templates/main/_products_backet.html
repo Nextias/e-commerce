@@ -1,0 +1,26 @@
+<div class="list-group">
+    <div class="list-group">
+{% if products %}
+{% for product in products %}
+<div class="list-group-item", id="list-group-item-{{product.id}}">
+    <div class="d-flex w-100 justify-content-between">
+        <a href="{{ url_for('main.product', id=product.id) }}">
+            <h5 class="mb-1">{{ product.name }}</h5>
+        </a>
+        {% if current_user.is_authenticated %}
+        <div class="d-flex gap-2 justify-content-center">
+            <span class="badge bg-primary rounded-pill" id='amount-{{ product.id }}'>{% if products[product] %} {{products[product]}} {% endif %}</span>
+            <button class="btn btn-sm btn-outline-success" id='add-{{ product.id }}',
+             onclick='add_product({{ product.id }},"amount-{{ product.id }}", "list-group-item-{{product.id}}")'>+</button>
+            <button class="btn btn-sm btn-outline-danger" id='remove-{{ product.id }}'
+            onclick='remove_product({{ product.id }},"amount-{{ product.id }}", "list-group-item-{{product.id}}")'>-</button>
+        </div>
+        {% endif %}
+    </div>
+    <p class="mb-1">Price: {{product.price}}</p>
+</div>
+{% endfor%}
+{% endif %}
+</div>
+<script src="{{ url_for('static', filename='add_item.js') }}"></script>
+<script src="{{ url_for('static', filename='remove_item.js') }}"></script>

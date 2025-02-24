@@ -13,6 +13,7 @@
         rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
         crossorigin="anonymous">
+ {% block head_container %}{%endblock%}
   </head>
  {% block before_body_scripts %} {% endblock %}
   <body>
@@ -26,4 +27,5 @@
     {% endwith %}
     {% block content %}{% endblock %}
   </body>
+  {% block after_body_scripts %} {% endblock %}
 </html>

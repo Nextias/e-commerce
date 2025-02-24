@@ -1,8 +1,50 @@
 {% extends "base.html" %}
 {% block content %}
-<p>{{product.name}}</p>
-<p>{{product.cost}}</p>
-{% for category in categories %}
-<p>{{category.name}}</p>
-{% endfor %}
+<div class="list-group">
+    <div class="list-group-item">
+        <div class="d-flex w-100 justify-content-between">
+            <h1 class="mb-1">{{ product.name }}</h1>
+            {% if current_user.is_authenticated %}
+            <div class="d-flex gap-2 justify-content-center">
+                <span class="badge bg-primary rounded-pill" id='amount-{{ product.id }}'>{% if amount %} {{amount}} {% endif %}</span>
+                <button class="btn btn-sm btn-outline-success" id='add-{{ product.id }}',
+                 onclick='add_product({{ product.id }},"amount-{{ product.id }}", "list-group-item-{{product.id}}")'>+</button>
+                <button class="btn btn-sm btn-outline-danger" id='remove-{{ product.id }}'
+                onclick='remove_product({{ product.id }},"amount-{{ product.id }}", "list-group-item-{{product.id}}")'>-</button>
+            </div>
+            {% endif %}
+        </div>
+        <p class="mb-1">Price: {{ product.price }}</p>
+        <p class="mb-1">Description: {{ product.description }}</p>
+        <img src="{{ product.photo_path }}" alt="{{ product.name }}" class="img-fluid">
+        <div class="mt-3">
+            <h4>Details</h4>
+            <ul>
+                <li>Category: {{ product.category }}</li>
+                <li>Brand: {{ product.brand }}</li>
+                <li>Stock: {{ product.stock }}</li>
+            </ul>
+        </div>
+        <div class="mt-3">
+            <h4>Reviews</h4>
+            {% if product.reviews %}
+                {% for review in product.reviews %}
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ review.user.username }}</h5>
+                            <p class="card-text">{{ review.comment }}</p>
+                            <p class="card-text"><small class="text-muted">Rating: {{ review.rating }}/5</small></p>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No reviews yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block after_body_scripts %} 
+<script src="{{ url_for('static', filename='add_item.js') }}"></script>
+<script src="{{ url_for('static', filename='remove_item.js') }}"></script>
 {% endblock %}
