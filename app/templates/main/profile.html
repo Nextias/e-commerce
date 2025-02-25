@@ -1,52 +1,6 @@
 {% extends "base.html" %}
 {% block head_container %}
-<style>
-    body {
-        background-color: #f8f9fa;
-    }
-    .profile-card {
-        margin-top: 50px;
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-    }
-    .profile-img {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-bottom: 20px;
-    }
-    .profile-info {
-        text-align: center;
-    }
-    .profile-info h2 {
-        margin-bottom: 10px;
-        font-size: 24px;
-        font-weight: bold;
-    }
-    .profile-info p {
-        color: #666;
-        font-size: 16px;
-    }
-    .profile-details {
-        margin-top: 30px;
-    }
-    .profile-details h4 {
-        margin-bottom: 20px;
-        font-size: 20px;
-        font-weight: bold;
-    }
-    .profile-details ul {
-        list-style-type: none;
-        padding: 0;
-    }
-    .profile-details ul li {
-        margin-bottom: 10px;
-        font-size: 16px;
-    }
-</style>
+<style> @import url("{{ url_for('static', filename='css/profile.css') }}") </style>
 {% endblock%}
 {% block before_body_scripts %}
 {% endblock %}
@@ -56,16 +10,19 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="profile-card">
+                <span class="corner-text">
+                <a href="{{ url_for('main.edit_profile') }}">Edit</a>
+                </span>
                 <p>Username: {{ current_user.username}}</p>
                 <hr>
                 <p>Email: {{ current_user.email }} </p>
-                <p>Name: {{ current_user.first_name }} {{ current_user.last_name }}
-                <p>Phone number: {{ current_user.phone_number}}
-                <p>Address: {{ current_user.address}}
-                <p>About me: {{ current_user.about_me }}
+                <p>Name: {{ current_user.first_name }} {{ current_user.last_name }}</p>
+                <p>Phone number: {{ current_user.phone_number}}</p>
+                <p>Address: {{ current_user.address}}</p>
+
                 <hr>
                 <div class="profile-info">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVhRlq7ZB5GlBrt-HE6rMc9LtiSjucs_KNjQ&s">
+                    <p>{{ current_user.about_me }}</p>
                 </div>
             </div>
         </div>

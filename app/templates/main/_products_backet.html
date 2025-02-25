@@ -10,10 +10,12 @@
         {% if current_user.is_authenticated %}
         <div class="d-flex gap-2 justify-content-center">
             <span class="badge bg-primary rounded-pill" id='amount-{{ product.id }}'>{% if products[product] %} {{products[product]}} {% endif %}</span>
+            {% if backet %}
             <button class="btn btn-sm btn-outline-success" id='add-{{ product.id }}',
              onclick='add_product({{ product.id }},"amount-{{ product.id }}", "list-group-item-{{product.id}}")'>+</button>
             <button class="btn btn-sm btn-outline-danger" id='remove-{{ product.id }}'
             onclick='remove_product({{ product.id }},"amount-{{ product.id }}", "list-group-item-{{product.id}}")'>-</button>
+            {% endif %}
         </div>
         {% endif %}
     </div>
@@ -22,5 +24,5 @@
 {% endfor%}
 {% endif %}
 </div>
-<script src="{{ url_for('static', filename='add_item.js') }}"></script>
-<script src="{{ url_for('static', filename='remove_item.js') }}"></script>
+<script src="{{ url_for('static', filename='js/add_item.js') }}"></script>
+<script src="{{ url_for('static', filename='js/remove_item.js') }}"></script>

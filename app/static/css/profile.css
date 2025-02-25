@@ -1,0 +1,56 @@
+
+    body {
+        background-color: #f8f9fa;
+    }
+    .profile-card {
+        position: relative; /* Required for absolute positioning of child elements */
+        margin-top: 50px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+    .profile-img {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 20px;
+    }
+    .profile-info {
+        text-align: center;
+    }
+    .profile-info h2 {
+        margin-bottom: 10px;
+        font-size: 24px;
+        font-weight: bold;
+    }
+    .profile-info p {
+        color: #666;
+        font-size: 16px;
+    }
+    .profile-details {
+        margin-top: 30px;
+    }
+    .profile-details h4 {
+        margin-bottom: 20px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    .profile-details ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    .profile-details ul li {
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+    
+    .corner-text {
+        position: absolute; /* Position the text absolutely within the parent */
+        top: 10px; /* Distance from the top */
+        right: 10px; /* Distance from the right */
+        font-size: 14px; /* Adjust font size */
+        color: #555; /* Adjust text color */
+        font-weight: bold; /* Optional: Make the text bold */
+    }

@@ -3,7 +3,8 @@ from dotenv import load_dotenv
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
-
+imagesdir = basedir + '\\app\\static\\images\\products'
+print(imagesdir)
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
@@ -16,4 +17,5 @@ class Config:
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['your-email@example.com']
     LANGUAGES = ['en', 'ru']
+    UPLOAD_FOLDER = imagesdir
     MS_TRANSLATOR_KEY = os.environ.get('MS_TRANSLATOR_KEY')

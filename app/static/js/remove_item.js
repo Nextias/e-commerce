@@ -15,6 +15,8 @@ async function remove_product(productId, elementId, parentId) {
         const data = await response.json();
         // Get the new amount from the API response
         const newAmount = data.amount;
+        const totalAmount = data.total_amount;
+        console.log(totalAmount)
         // Update the amount displayed on the webpage
         const amountElement = document.getElementById(elementId);
         if (amountElement) {
@@ -24,6 +26,7 @@ async function remove_product(productId, elementId, parentId) {
             else{
                 if (document.URL.includes('backet')){
                     parentElement = document.getElementById(parentId)
+                    console.log(parentId)
                     parentElement.remove()
                 }
                 else{
@@ -32,8 +35,13 @@ async function remove_product(productId, elementId, parentId) {
             }
         } else {
             console.error('Element not found');
+        };
+        if (document.URL.includes('backet')){
+            totalAmountElement = document.getElementById("total-amount")
+            totalAmountElement.textContent = totalAmount
+
         }
     } catch (error) {
         console.error('Error updating product amount:', error);
-    }
+    };
 }

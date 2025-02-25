@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 {% import "bootstrap_wtf.html" as wtf %}
 {% block content %}
-<h2> Backet</h2>
+<h2>Checkout</h2>
 {% include 'main/_products_backet.html'%}
 <!-- Total Amount Section -->
-    <div class="mt-4 p-3 bg-light rounded">
+<div class="mt-4 p-3 bg-light rounded">
     <h4 class="d-flex justify-content-between align-items-center">
         <span>Total Amount:</span>
         <span id="total-amount">{{ total_amount }}</span>
     </h4>
-    </div>
+</div>
 <!-- Button after Total Amount -->
-    <div class="d-flex justify-content-center mt-3">
-        <div class="w-30">
-            {% set form_action = url_for('main.checkout') %}
-            {{ wtf.quick_form(form, action=form_action) }}
-        </div>
+<div class="d-flex justify-content-center mt-3">
+    <div class="w-30">
+        {% set form_action = url_for('main.submit_order') %}
+        {{ wtf.quick_form(form, action=form_action) }}
     </div>
+</div>
 {% endblock %}
