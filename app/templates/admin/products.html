@@ -3,6 +3,50 @@
      {% include 'admin/_nav.html'%}   
         <!-- Page Content -->
         <h1>Products management</h1>
+
+        {% if products %}
+        <style>
+            .product-table {
+                width: 100%;
+                border-collapse: collapse; /* Ensures borders are merged */
+            }
+            .product-table th, .product-table td {
+                border: 1px solid #ddd; /* Adds a light gray border */
+                padding: 8px; /* Adds spacing inside cells */
+                text-align: left; /* Aligns text to the left */
+            }
+            .product-table th {
+                background-color: #f2f2f2; /* Adds a light gray background to headers */
+            }
+            .product-table tr:nth-child(even) {
+                background-color: #f9f9f9; /* Adds a zebra-striping effect */
+            }
+            .product-table tr:hover {
+                background-color: #eaeaea; /* Adds a hover effect */
+            }
+        </style>
+        
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Brand</th>
+                    <th>Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td><a href="{{url_for('main.product', id=product.id)}}">{{ product.id }}</a></td>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.brand }}</td>
+                    <td>{{ product.stock }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
         <div class="d-flex justify-content-center mt-3">
             <div class="w-30">
                 <a href="{{ url_for('admin.create_product') }}" class="btn btn-primary mb-3">
@@ -10,5 +54,5 @@
                 </a>
             </div>
         </div>
-
   {% endblock %}
+

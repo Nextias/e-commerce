@@ -40,7 +40,6 @@ def register():
             email=form.email.data,
         )
         user.set_password(form.password.data)
-        user.set_role()
         db.session.add(user)
         db.session.commit()
         flash('You sucessfully registered!')

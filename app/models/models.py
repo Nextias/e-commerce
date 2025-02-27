@@ -32,6 +32,7 @@ order_products = sa.Table(
 
 
 class BasketProduct(db.Model):
+    """ Модель БД таблица Many-To-Many продуктов в корзине. """
     __tablename__ = 'basket_products'
 
     basket_id = db.Column(db.Integer, db.ForeignKey(
@@ -42,14 +43,23 @@ class BasketProduct(db.Model):
 
 
 class Role(db.Model):
+    """ Модель БД таблица role. """
+    __tablename__ = 'role'
+
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    name: so.Mapped[str] = so.mapped_column(sa.String(20), index=True)
+    name: so.Mapped[str] = so.mapped_column(sa.String(20), unique=True,
+                                            index=True)
     users: so.Mapped[List['User']] = so.relationship(back_populates='role')
 
 
 class User(UserMixin, db.Model):
-    """ Модель БД таблица user"""
+    """ Модель БД таблица user. """
     __tablename__ = 'user'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.set_role()
+
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     username: so.Mapped[str] = so.mapped_column(sa.String(64), index=True,
                                                 unique=True)
@@ -78,26 +88,28 @@ class User(UserMixin, db.Model):
         return '<User {}>'.format(self.username)
 
     def set_password(self, password):
+        """ Метод генерации хэша пароля. """
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
+        """ Метод проверки пароля.  """
         return check_password_hash(self.password_hash, password)
 
     def set_role(self, role_name='user'):
+        """ Назначение роли. """
         role = db.session.scalar(sa.select(Role).where(Role.name == role_name))
         if role:
             self.role = role
 
-    def avatar(self, size):
-        digest = md5(self.email.lower().encode('utf-8')).hexdigest()
-        return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
-
     def get_basket(self):
+        """ Получение актуальной корзины покупателя, если таковой нету,
+         то создаётся новая.
+        """
         active_baskets = db.session.scalars(sa.select(Basket)
                                             .where(Basket.user_id == self.id)
                                             .where(Basket.active == True)
                                             .order_by(Basket.created_at)).all()
-        if not active_baskets:
+        if not active_baskets:  # Корзина отсутствует
             print('create basket')
             basket = Basket(user_id=self.id, active=True)
             db.session.add(basket)
@@ -108,6 +120,7 @@ class User(UserMixin, db.Model):
 
 
 class Product(db.Model):
+    """ Модель БД таблица product. """
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     name: so.Mapped[str] = so.mapped_column(sa.String(64), index=True,
                                             unique=True)
@@ -139,6 +152,7 @@ class Product(db.Model):
 
 
 class Category(db.Model):
+    """ Модель БД таблица category. """
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     name: so.Mapped[str] = so.mapped_column(sa.String(64), index=True)
     products: so.Mapped[List['Product']] = so.relationship(
@@ -152,6 +166,7 @@ class Category(db.Model):
 
 
 class Basket(db.Model):
+    """ Модель БД таблица basket. """
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
                                                index=True)
@@ -167,6 +182,12 @@ class Basket(db.Model):
         back_populates='basket')
 
     def get_basket_products(self):
+        """ Получение количества товаров в корзине.
+        Если в корзине количество определённого товара было уменьшено до нуля,
+          то товар удаляется из корзины.
+        Если количество товара в корзине больше, чем товара в наличии,
+            то количество корректируетсяю
+        """
         basket_items = dict()
         if self.products:
             for product in self.products:
@@ -177,19 +198,26 @@ class Basket(db.Model):
                 # Если в наличии меньшее количество товара, чем в корзине
                 if basket_item.amount > product.stock:
                     basket_item.amount = product.stock
-                    if not basket_item.amount:
-                        db.session.delete(basket_item)
-                    db.session.commit()
+                # Если количество товара в корзине равно нулю
+                if not basket_item.amount:
+                    db.session.delete(basket_item)
+                db.session.commit()
                 basket_items[product] = basket_item.amount
         return basket_items
 
     def get_total_amount(self, basket_items=None):
+        """ Получение суммарной стоимости всех товаров в корзине.
+        Если ранее был получен словарь, содержащий количество товаров
+         в корзине(get_basket_products), то его можно передать в качестве
+          аргумента и не пересчитывать.
+        """
         basket_items = basket_items or self.get_basket_products()
         return sum(product.price * amount
                    for product, amount in basket_items.items())
 
 
 class Order(db.Model):
+    """ Модель БД таблица order. """
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     order_number: so.Mapped[int] = so.mapped_column(unique=True, index=True)
     created_at: so.Mapped[Optional[datetime]] = so.mapped_column(
@@ -210,9 +238,6 @@ class Order(db.Model):
     customer: so.Mapped[User] = so.relationship(back_populates='user_orders')
     basket: so.Mapped[Optional['Basket']] = so.relationship(
         back_populates='order')
-
-    def generate_order_number(self):
-        pass
 
 
 @login.user_loader

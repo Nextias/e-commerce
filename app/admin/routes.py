@@ -84,7 +84,8 @@ def admin():
 @login_required
 @admin_only
 def products():
-    return render_template('admin/products.html')
+    products = db.session.scalars(sa.select(Product))
+    return render_template('admin/products.html', products=products)
 
 
 @bp.route('/admin/create_product', methods=('GET', 'POST'))
