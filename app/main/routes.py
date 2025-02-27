@@ -14,6 +14,7 @@ from app.models import Basket, BasketProduct, Order, Product
 @bp.route('/index', methods=('GET', 'POST'))
 @login_required
 def index():
+    """ Отображение стартовой страницы. """
     orders = current_user.user_orders
     return render_template('main/index.html', orders=orders)
 
@@ -21,11 +22,13 @@ def index():
 @bp.route('/product/<id>', methods=('GET', 'POST'))
 @login_required
 def product(id):
+    """ Отображение информации о товаре по id. """
     form = UploadForm()
     product = db.session.get(Product, int(id))
-    if product is None:
+    if product is None:  # Продукт не найден
         abort(404)
     categories_list = product.categories
+    # Получение количества заданного продукта в корзине
     basket = current_user.get_basket()
     basket_item = db.session.scalar(sa.select(BasketProduct).where(
         BasketProduct.basket_id == basket.id,
@@ -40,14 +43,17 @@ def product(id):
 @bp.route('/profile', methods=('GET', 'POST'))
 @login_required
 def profile():
+    """ Отображение страницы профиля. """
     return render_template('main/profile.html')
 
 
 @bp.route('/edit_profile/', methods=('GET', 'POST'))
 @login_required
 def edit_profile():
+    """ Отображение страницы редактирования профиля. """
     form = EditProfileForm()
     if form.validate_on_submit():
+        # Изменение пользователя в соответствии с данными из формы
         current_user.first_name = form.first_name.data
         current_user.last_name = form.last_name.data
         current_user.phone_number = form.phone_number.data
@@ -55,6 +61,7 @@ def edit_profile():
         current_user.address = form.address.data
         db.session.commit()
         return redirect(url_for('main.profile'))
+    # Получение первоначальных данных для формы
     form.first_name.data = current_user.first_name
     form.last_name.data = current_user.last_name
     form.phone_number.data = current_user.phone_number
@@ -66,12 +73,16 @@ def edit_profile():
 @bp.route('/order/<order_number>/', methods=('GET', 'POST'))
 @login_required
 def order(order_number):
+    """ Отображение информации о заказе по order_number. """
     order = db.session.scalar(sa.select(Order).where(
         Order.order_number == order_number))
-    if order is None:
+    if order is None:  # Заказ не найден
         abort(404)
-    elif current_user.id != order.user_id:
-        abort(403)
+    # Пользователь не владелец заказа и не админ
+    elif (current_user.role.name != 'admin'
+          and current_user.id != order.user_id):
+        abort(404)  # Посторонний не получает информацию о наличии заказа
+    # Получение информации о корзине по заказу
     basket = db.session.get(Basket, order.basket_id)
     basket_items = basket.get_basket_products()
     total_amount = basket.get_total_amount(basket_items)
@@ -83,11 +94,14 @@ def order(order_number):
 
 @bp.route('/explore/', methods=('GET', 'POST'))
 def explore():
+    """ Отображение главной страницы поиска товаров. """
+    # Проверка наличия товаров в корзине
     if current_user.is_authenticated:
         basket = current_user.get_basket()
         basket_items = basket.get_basket_products()
     else:
         basket_items = {}
+    # Составление списка продуктов
     products = dict.fromkeys(db.session.scalars(sa.select(Product)), 0)
     products.update(basket_items)
     return render_template('main/explore.html', products=products,
@@ -97,6 +111,8 @@ def explore():
 @login_required
 @bp.route('/basket/', methods=('GET', 'POST'))
 def basket():
+    """ Отображение корзины. """
+    # Получение информации об актуальной корзине покупателя
     basket = current_user.get_basket()
     basket_items = basket.get_basket_products()
     total_amount = basket.get_total_amount(basket_items)
@@ -109,6 +125,10 @@ def basket():
 @login_required
 @bp.route('/basket/add_product/<product_id>', methods=('GET', 'POST'))
 def add_item(product_id):
+    """ Добавление единицы продукта в корзину, с последующим возвращением
+    актуального количества товара и полной стоимости по корзине в формате json.
+    Функция предназначена для AJAX вызова.
+    """
     product = db.session.get(Product, int(product_id))
     if product is None:
         abort(404)
@@ -133,6 +153,10 @@ def add_item(product_id):
 @login_required
 @bp.route('/basket/remove_product/<product_id>', methods=('GET', 'POST'))
 def remove_item(product_id):
+    """ Удаление единицы продукта из корзины, с последующим возвращением
+    актуального количества товара и полной стоимости по корзине в формате json.
+    Функция предназначена для AJAX вызова.
+    """
     product = db.session.get(Product, int(product_id))
     if product is None:
         abort(404)
@@ -156,12 +180,15 @@ def remove_item(product_id):
 @login_required
 @bp.route('/checkout/', methods=('GET', 'POST'))
 def checkout():
-    form = CheckoutForm()
+    """ Отображение страницы подтверждения заказа. """
+    form = CheckoutForm()  # Форма не прошла проверку
     if not form.validate_on_submit():
+        flash('validation error')
         return redirect(url_for('main.basket'))
+    # Получение информации об актуальной корзине покупателя
     basket = current_user.get_basket()
     basket_items = basket.get_basket_products()
-    if not basket_items:
+    if not basket_items:  # Корзина пуста
         flash('Basket is empty')
         return redirect(url_for('main.basket'))
     total_amount = basket.get_total_amount(basket_items)
@@ -174,19 +201,23 @@ def checkout():
 @login_required
 @bp.route('/submit_order/', methods=('GET', 'POST'))
 def submit_order():
+    """ Формирование заказа. """
     form = SubmitOrderForm()
     if not form.validate_on_submit():
-        flash('Error')
+        flash('validation error')
         return redirect(url_for('main.basket'))
+    # Получение информации об актуальной корзине покупателя
     basket = current_user.get_basket()
     basket_items = basket.get_basket_products()
     total_amount = basket.get_total_amount(basket_items)
+    # Подготовка к списанию товаров из доступных к продаже
     for product, amount in basket_items.items():
+        # Если товаров не хватает для оформления заказов
         if product.stock < amount:
-            flash('Error')
+            flash('Not enough products in stock')
             return redirect(url_for('main.basket'))
         product.stock -= amount
-
+    # Формирование заказа
     order = Order(order_number=basket.id,
                   status='created',
                   shipment_date=form.shipment_date.data,
@@ -195,8 +226,8 @@ def submit_order():
                   address=form.address.data,
                   basket_id=basket.id)
     db.session.add(order)
-    basket.active = False
-    db.session.commit()
+    basket.active = False  # Смена статуса корзины с актуальной на архивную
+    db.session.commit()  # Подтверждение всех действий с БД в рамках транзакции
     flash('Your order was created')
     return redirect(url_for('main.index'))
 
@@ -204,17 +235,22 @@ def submit_order():
 @login_required
 @bp.route('/cancel_order/<id>', methods=('GET', 'POST'))
 def cancel_order(id):
-    print(id)
+    """ Отмена заказа. """
     form = CancelOrderForm()
     if not form.validate_on_submit():
         flash('Error')
         return redirect(url_for('main.index'))
     order = db.session.get(Order, int(id))
-    if not order or not order.user_id == current_user.id:
+    if not order:  # Заказ не найден
         abort(404)
-    if order.status == 'canceled':
-        flash('Error')
+    # Пользователь не владелец заказа и не админ
+    elif (current_user.role.name != 'admin'
+          and current_user.id != order.user_id):
+        abort(404)  # Посторонний не получает информацию о наличии заказа
+    if order.status == 'canceled':  # Заказ уже был отменён
+        flash('Order already canceled')
         return redirect(url_for('main.index'))
+    # Смена статуса заказа
     order.status = 'canceled'
     db.session.commit()
     flash('order cancelled successfully')

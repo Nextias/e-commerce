@@ -5,3 +5,6 @@ from app.forms.EditProfileForm import EditProfileForm
 from app.forms.CheckoutForm import CheckoutForm
 from app.forms.SubmitOrderForm import SubmitOrderForm
 from app.forms.CancelOrderForm import CancelOrderForm
+
+__all__ = ['LoginForm', 'RegistrationForm', 'UploadForm', 'EditProfileForm',
+           'CheckoutForm', 'SubmitOrderForm', 'CancelOrderForm']
