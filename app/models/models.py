@@ -31,11 +31,11 @@ order_products = sa.Table(
 )
 
 
-class BacketProduct(db.Model):
-    __tablename__ = 'backet_products'
+class BasketProduct(db.Model):
+    __tablename__ = 'basket_products'
 
-    backet_id = db.Column(db.Integer, db.ForeignKey(
-        'backet.id'), primary_key=True)
+    basket_id = db.Column(db.Integer, db.ForeignKey(
+        'basket.id'), primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey(
         'product.id'), primary_key=True)
     amount = db.Column(db.Integer, default=1)
@@ -69,9 +69,9 @@ class User(UserMixin, db.Model):
                                                index=True)
     role: so.Mapped[Role] = so.relationship(back_populates='users')
     user_orders: so.Mapped[List['Order']] = so.relationship(
-        back_populates='customer')
-    user_backets: so.Mapped[List['Backet']] = so.relationship(
-        back_populates='user', order_by='Backet.created_at'
+        back_populates='customer', order_by='desc(Order.id)')
+    user_baskets: so.Mapped[List['Basket']] = so.relationship(
+        back_populates='user', order_by='Basket.created_at'
     )
 
     def __repr__(self):
@@ -92,19 +92,19 @@ class User(UserMixin, db.Model):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
 
-    def get_backet(self):
-        active_backets = db.session.scalars(sa.select(Backet)
-                                            .where(Backet.user_id == self.id)
-                                            .where(Backet.active)
-                                            .order_by(Backet.created_at)).all()
-        print(active_backets, type(active_backets))
-        if not active_backets:
-            backet = Backet(user_id=self.id, active=True)
-            db.session.add(backet)
+    def get_basket(self):
+        active_baskets = db.session.scalars(sa.select(Basket)
+                                            .where(Basket.user_id == self.id)
+                                            .where(Basket.active == True)
+                                            .order_by(Basket.created_at)).all()
+        if not active_baskets:
+            print('create basket')
+            basket = Basket(user_id=self.id, active=True)
+            db.session.add(basket)
             db.session.commit()
         else:
-            backet = active_backets[0]
-        return backet
+            basket = active_baskets[-1]
+        return basket
 
 
 class Product(db.Model):
@@ -126,8 +126,8 @@ class Product(db.Model):
         secondary=order_products,
         back_populates='products'
     )
-    backets: so.Mapped[List['Backet']] = so.relationship(
-        secondary='backet_products',
+    baskets: so.Mapped[List['Basket']] = so.relationship(
+        secondary='basket_products',
         back_populates='products'
     )
 
@@ -151,7 +151,7 @@ class Category(db.Model):
         return '<Category {}>'.format(self.name)
 
 
-class Backet(db.Model):
+class Basket(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
                                                index=True)
@@ -159,28 +159,34 @@ class Backet(db.Model):
     created_at: so.Mapped[Optional[datetime]] = so.mapped_column(
         default=lambda: datetime.now(timezone.utc))
     products: so.Mapped[List['Product']] = so.relationship(
-        secondary='backet_products',
-        back_populates='backets'
+        secondary='basket_products',
+        back_populates='baskets'
     )
-    user: so.Mapped[User] = so.relationship(back_populates='user_backets')
+    user: so.Mapped[User] = so.relationship(back_populates='user_baskets')
     order: so.Mapped[Optional['Order']] = so.relationship(
-        back_populates='backet')
+        back_populates='basket')
 
-    def get_backet_products(self):
-        backet_items = dict()
+    def get_basket_products(self):
+        basket_items = dict()
         if self.products:
             for product in self.products:
-                backet_item = db.session.scalar(
-                    sa.select(BacketProduct).where(
-                        BacketProduct.backet_id == self.id,
-                        BacketProduct.product_id == product.id))
-                backet_items[product] = backet_item.amount
-        return backet_items
+                basket_item = db.session.scalar(
+                    sa.select(BasketProduct).where(
+                        BasketProduct.basket_id == self.id,
+                        BasketProduct.product_id == product.id))
+                # Если в наличии меньшее количество товара, чем в корзине
+                if basket_item.amount > product.stock:
+                    basket_item.amount = product.stock
+                    if not basket_item.amount:
+                        db.session.delete(basket_item)
+                    db.session.commit()
+                basket_items[product] = basket_item.amount
+        return basket_items
 
-    def get_total_amount(self, backet_items=None):
-        backet_items = backet_items or self.get_backet_products()
+    def get_total_amount(self, basket_items=None):
+        basket_items = basket_items or self.get_basket_products()
         return sum(product.price * amount
-                   for product, amount in backet_items.items())
+                   for product, amount in basket_items.items())
 
 
 class Order(db.Model):
@@ -194,15 +200,15 @@ class Order(db.Model):
     total_amount: so.Mapped[int] = so.mapped_column()
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
                                                index=True)
-    backet_id: so.Mapped[Optional[int]] = so.mapped_column(
-        sa.ForeignKey(Backet.id), nullable=True)
+    basket_id: so.Mapped[Optional[int]] = so.mapped_column(
+        sa.ForeignKey(Basket.id), nullable=True)
 
     products: so.Mapped[List['Product']] = so.relationship(
         secondary='order_products',
         back_populates='orders'
     )
     customer: so.Mapped[User] = so.relationship(back_populates='user_orders')
-    backet: so.Mapped[Optional['Backet']] = so.relationship(
+    basket: so.Mapped[Optional['Basket']] = so.relationship(
         back_populates='order')
 
     def generate_order_number(self):

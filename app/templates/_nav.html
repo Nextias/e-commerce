@@ -9,16 +9,14 @@
           <li class="nav-item">
             <a class="nav-link" aria-current="page" href="{{ url_for('main.profile') }}">Profile</a>
           </li>
-          {% if current_user.is_authenticated and not current_user.role.name == 'admin'%}
           <li class="nav-item">
             <a class="nav-link" aria-current="page" href="{{ url_for('main.explore') }}">Explore</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" aria-current="page" href="{{ url_for('main.backet') }}">Backet</a>
+            <a class="nav-link" aria-current="page" href="{{ url_for('main.basket') }}">Basket</a>
           </li>
         </ul>
         <ul class="navbar-nav mb-2 mb-lg-0">
-          {% endif %}
           {% if current_user.is_anonymous %}
           <li class="nav-item">
             <a class="nav-link" aria-current="page" href="{{ url_for('auth.login') }}">Login</a>

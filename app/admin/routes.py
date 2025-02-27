@@ -3,6 +3,7 @@ from functools import wraps
 from urllib.parse import urlsplit
 
 import sqlalchemy as sa
+from sqlalchemy import func
 from flask import (abort, current_app, flash, redirect, render_template,
                    request, url_for)
 from flask_login import current_user, login_required, login_user, logout_user
@@ -11,9 +12,10 @@ from werkzeug.utils import secure_filename
 from app import db
 from app.admin import bp
 from app.forms import LoginForm, RegistrationForm, UploadForm
-from app.models import Role, User, Product
+from app.models import Role, User, Product, Order
 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+
 
 def admin_only(f):
     @wraps(f)
@@ -70,4 +72,24 @@ def upload_product_image(id):
 @login_required
 @admin_only
 def admin():
-    return render_template('admin/admin.html')
+    users_amount = db.session.query(func.count(User.id)).scalar()
+    products_amount = db.session.query(func.count(Product.id)).scalar()
+    orders_amount = db.session.query(func.count(Order.id)).scalar()
+    return render_template('admin/admin.html', users_amount=users_amount,
+                           products_amount=products_amount,
+                           orders_amount=orders_amount)
+
+
+@bp.route('/admin/products', methods=('GET', 'POST'))
+@login_required
+@admin_only
+def products():
+    return render_template('admin/products.html')
+
+
+@bp.route('/admin/create_product', methods=('GET', 'POST'))
+@login_required
+@admin_only
+def create_product():
+    return render_template('admin/create_product.html')
+

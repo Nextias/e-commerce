@@ -2,7 +2,7 @@
 async function add_product(productId, elementId, parentId) {
     try {
         // Send the product ID to the API
-        const response = await fetch(`/backet/add_product/${productId}`, {
+        const response = await fetch(`/basket/add_product/${productId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -22,19 +22,22 @@ async function add_product(productId, elementId, parentId) {
             if (newAmount > 0){
             amountElement.textContent = newAmount;
             }
-            else{
+        }
+        else{
+                console.error('Element not found');
+            }
+        if (document.URL.includes('basket')){
+            totalAmountElement = document.getElementById("total-amount")
+            totalAmountElement.textContent = totalAmount
+            if (newAmount < 1){
                 parentElement = document.getElementById(parentId)
                 parentElement.remove()
             }
-        } else {
-            console.error('Element not found');
         }
-        if (document.URL.includes('backet')){
-            totalAmountElement = document.getElementById("total-amount")
-            totalAmountElement.textContent = totalAmount
-
+        
         }
-    } catch (error) {
+    catch (error) {
         console.error('Error updating product amount:', error);
     }
+
 }

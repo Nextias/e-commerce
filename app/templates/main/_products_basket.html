@@ -10,7 +10,7 @@
         {% if current_user.is_authenticated %}
         <div class="d-flex gap-2 justify-content-center">
             <span class="badge bg-primary rounded-pill" id='amount-{{ product.id }}'>{% if products[product] %} {{products[product]}} {% endif %}</span>
-            {% if backet %}
+            {% if modify_amount %}
             <button class="btn btn-sm btn-outline-success" id='add-{{ product.id }}',
              onclick='add_product({{ product.id }},"amount-{{ product.id }}", "list-group-item-{{product.id}}")'>+</button>
             <button class="btn btn-sm btn-outline-danger" id='remove-{{ product.id }}'

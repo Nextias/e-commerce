@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% import "bootstrap_wtf.html" as wtf %}
 {% block content %}
 <h2> Order {{order.order_number}} </h2>
 <h5 class="mb-1">Shipment date: {{ order.shipment_date }}</h5>
 <h5 class="mb-1">Status: {{ order.status }}</h5>
-{% include 'main/_products_backet.html'%}
+{% include 'main/_products_basket.html'%}
 <!-- Total Amount Section -->
 <div class="mt-4 p-3 bg-light rounded">
     <h4 class="d-flex justify-content-between align-items-center">
@@ -11,4 +12,12 @@
         <span id="total-amount">{{ total_amount }}</span>
     </h4>
 </div>
+{% if order.status != 'canceled' %}
+<div class="d-flex justify-content-center mt-3">
+    <div class="w-30">
+        {% set form_action = url_for('main.cancel_order', id=order.id) %}
+        {{ wtf.quick_form(form, action=form_action) }}
+    </div>
+</div>
+{% endif %}
 {% endblock %}
