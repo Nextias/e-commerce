@@ -1,15 +1,12 @@
-from datetime import datetime, timezone, date
-from hashlib import md5
-from time import time
-from typing import Optional, List
+from datetime import date, datetime, timezone
+from typing import Dict, List, Optional
+
 import sqlalchemy as sa
 import sqlalchemy.orm as so
-from flask import current_app, session
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
-# import jwt
-from app import db, login
+from werkzeug.security import check_password_hash, generate_password_hash
 
+from app import db, login
 
 categories = sa.Table(
     'categories',
@@ -31,7 +28,7 @@ order_products = sa.Table(
 )
 
 
-class BasketProduct(db.Model):
+class BasketProduct(db.Model):  # type: ignore[name-defined]
     """ Модель БД таблица Many-To-Many продуктов в корзине. """
     __tablename__ = 'basket_products'
 
@@ -42,7 +39,7 @@ class BasketProduct(db.Model):
     amount = db.Column(db.Integer, default=1)
 
 
-class Role(db.Model):
+class Role(db.Model):  # type: ignore[name-defined]
     """ Модель БД таблица role. """
     __tablename__ = 'role'
 
@@ -52,7 +49,7 @@ class Role(db.Model):
     users: so.Mapped[List['User']] = so.relationship(back_populates='role')
 
 
-class User(UserMixin, db.Model):
+class User(UserMixin, db.Model):  # type: ignore[name-defined]
     """ Модель БД таблица user. """
     __tablename__ = 'user'
 
@@ -87,28 +84,39 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
-    def set_password(self, password):
+    def set_password(self, password: str) -> None:
         """ Метод генерации хэша пароля. """
         self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password):
+    def check_password(self, password: str) -> bool:
         """ Метод проверки пароля.  """
         return check_password_hash(self.password_hash, password)
 
-    def set_role(self, role_name='user'):
-        """ Назначение роли. """
+    def set_role(self, role_name: str = 'user') -> None:
+        """ Назначение роли.
+
+        Пример использования:
+        >>> user = User()
+        >>> user.set_role('admin')
+        """
         role = db.session.scalar(sa.select(Role).where(Role.name == role_name))
         if role:
             self.role = role
+        else:
+            raise ValueError(f"Роль '{role_name}' не найдена")
 
-    def get_basket(self):
+    def get_basket(self) -> 'Basket':
         """ Получение актуальной корзины покупателя, если таковой нету,
          то создаётся новая.
+
+        Возвращает:
+            Basket: Активная корзина пользователя.
         """
-        active_baskets = db.session.scalars(sa.select(Basket)
-                                            .where(Basket.user_id == self.id)
-                                            .where(Basket.active == True)
-                                            .order_by(Basket.created_at)).all()
+        active_baskets = db.session.scalars(
+            sa.select(Basket)
+            .where(Basket.user_id == self.id)
+            .where(Basket.active.is_(True))
+            .order_by(Basket.created_at)).all()
         if not active_baskets:  # Корзина отсутствует
             print('create basket')
             basket = Basket(user_id=self.id, active=True)
@@ -119,7 +127,7 @@ class User(UserMixin, db.Model):
         return basket
 
 
-class Product(db.Model):
+class Product(db.Model):  # type: ignore[name-defined]
     """ Модель БД таблица product. """
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     name: so.Mapped[str] = so.mapped_column(sa.String(64), index=True,
@@ -147,11 +155,12 @@ class Product(db.Model):
     def __repr__(self):
         return '<Product {}>'.format(self.name)
 
-    def get_path(self):
-        pass
+    def get_path(self) -> Optional[str]:
+        """ Получение пути к изображению продукта. """
+        return self.photo_path
 
 
-class Category(db.Model):
+class Category(db.Model):  # type: ignore[name-defined]
     """ Модель БД таблица category. """
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     name: so.Mapped[str] = so.mapped_column(sa.String(64), index=True)
@@ -165,7 +174,7 @@ class Category(db.Model):
         return '<Category {}>'.format(self.name)
 
 
-class Basket(db.Model):
+class Basket(db.Model):  # type: ignore[name-defined]
     """ Модель БД таблица basket. """
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
@@ -181,42 +190,51 @@ class Basket(db.Model):
     order: so.Mapped[Optional['Order']] = so.relationship(
         back_populates='basket')
 
-    def get_basket_products(self):
+    def get_basket_products(self) -> Dict['Product', int]:
         """ Получение количества товаров в корзине.
-        Если в корзине количество определённого товара было уменьшено до нуля,
-          то товар удаляется из корзины.
-        Если количество товара в корзине больше, чем товара в наличии,
-            то количество корректируетсяю
+
+        Возвращает:
+            Dict[Product, int]: Словарь, где ключ — продукт,
+              а значение — количество.
         """
         basket_items = dict()
-        if self.products:
-            for product in self.products:
-                basket_item = db.session.scalar(
-                    sa.select(BasketProduct).where(
-                        BasketProduct.basket_id == self.id,
-                        BasketProduct.product_id == product.id))
-                # Если в наличии меньшее количество товара, чем в корзине
-                if basket_item.amount > product.stock:
-                    basket_item.amount = product.stock
-                # Если количество товара в корзине равно нулю
-                if not basket_item.amount:
-                    db.session.delete(basket_item)
-                db.session.commit()
-                basket_items[product] = basket_item.amount
+
+        # Получаем все записи BasketProduct и связанные с ними продукты
+        basket_products = db.session.execute(
+            sa.select(BasketProduct, Product)
+            .join(Product, BasketProduct.product_id == Product.id)
+            .where(BasketProduct.basket_id == self.id)
+        ).all()
+        for basket_product, product in basket_products:
+            # Если в наличии меньшее количество товара, чем в корзине
+            if basket_product.amount > product.stock:
+                basket_product.amount = product.stock
+            # Если количество товара в корзине равно нулю
+            if not basket_product.amount:
+                db.session.delete(basket_product)
+            db.session.commit()
+            basket_items[product] = basket_product.amount
+
         return basket_items
 
-    def get_total_amount(self, basket_items=None):
+    def get_total_amount(self,
+                         basket_items: Optional[Dict['Product', int]] = None
+                         ) -> int:
         """ Получение суммарной стоимости всех товаров в корзине.
+
         Если ранее был получен словарь, содержащий количество товаров
          в корзине(get_basket_products), то его можно передать в качестве
           аргумента и не пересчитывать.
+
+        Возвращает:
+            int: Суммарная стоимость товаров в корзине.
         """
         basket_items = basket_items or self.get_basket_products()
         return sum(product.price * amount
                    for product, amount in basket_items.items())
 
 
-class Order(db.Model):
+class Order(db.Model):  # type: ignore[name-defined]
     """ Модель БД таблица order. """
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     order_number: so.Mapped[int] = so.mapped_column(unique=True, index=True)
@@ -241,5 +259,6 @@ class Order(db.Model):
 
 
 @login.user_loader
-def load_user(id):
+def load_user(id: str) -> Optional[User]:
+    """ Загрузка пользователя для Flask-Login. """
     return db.session.get(User, int(id))

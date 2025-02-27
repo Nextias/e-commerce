@@ -1,18 +1,17 @@
 import os
 from functools import wraps
-from urllib.parse import urlsplit
 
 import sqlalchemy as sa
-from sqlalchemy import func
 from flask import (abort, current_app, flash, redirect, render_template,
                    request, url_for)
-from flask_login import current_user, login_required, login_user, logout_user
+from flask_login import current_user, login_required
+from sqlalchemy import func
 from werkzeug.utils import secure_filename
 
 from app import db
 from app.admin import bp
-from app.forms import LoginForm, RegistrationForm, UploadForm
-from app.models import Role, User, Product, Order
+from app.forms import UploadForm
+from app.models import Order, Product, Role, User
 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
@@ -93,4 +92,3 @@ def products():
 @admin_only
 def create_product():
     return render_template('admin/create_product.html')
-

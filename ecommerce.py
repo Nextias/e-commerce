@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 from app import create_app, db
-from app.models.models import User, Product, Category, categories
+from app.models import User, Product, Category, categories
 app = create_app()
 
 

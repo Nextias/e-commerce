@@ -1,17 +1,13 @@
-import os
-from urllib.parse import urlsplit
-
 import sqlalchemy as sa
-from flask import (abort, current_app, flash, jsonify, redirect,
-                   render_template, request, url_for, g, session)
-from flask_login import current_user, login_required, login_user, logout_user
-from app.forms import (UploadForm, EditProfileForm, CheckoutForm,
-                       SubmitOrderForm, CancelOrderForm)
+from flask import (abort, flash, jsonify, redirect, render_template, request,
+                   url_for)
+from flask_login import current_user, login_required
 
 from app import db
+from app.forms import (CancelOrderForm, CheckoutForm, EditProfileForm,
+                       SubmitOrderForm, UploadForm)
 from app.main import bp
-from app.models.models import (Basket, BasketProduct, Category, Order, Product,
-                               User, order_products)
+from app.models import Basket, BasketProduct, Order, Product
 
 
 @bp.route('/', methods=('GET', 'POST'))

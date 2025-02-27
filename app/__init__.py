@@ -1,4 +1,4 @@
-from flask import Flask, current_app, request
+from flask import Flask
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -30,4 +30,6 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     return app
 
-from app.models import models
+
+# Импорт моделей в конце(Чтобы избежать circular import)
+from app import models  # noqa

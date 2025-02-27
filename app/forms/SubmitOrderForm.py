@@ -1,11 +1,8 @@
-import sqlalchemy as sa
-from flask_wtf import FlaskForm
-from wtforms import BooleanField, DateField, StringField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
 from datetime import date
 
-from app import db
-from app.models.models import User
+from flask_wtf import FlaskForm
+from wtforms import DateField, StringField, SubmitField
+from wtforms.validators import DataRequired, ValidationError
 
 
 class SubmitOrderForm(FlaskForm):
