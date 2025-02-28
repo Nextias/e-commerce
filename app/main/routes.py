@@ -246,11 +246,11 @@ def cancel_order(id):
     elif (current_user.role.name != 'admin'
           and current_user.id != order.user_id):
         abort(404)  # Посторонний не получает информацию о наличии заказа
-    if order.status == 'Отменён':  # Заказ уже был отменён
+    if order.status.name == 'Отменён':  # Заказ уже был отменён
         flash('Заказ уже был ранее отменён')
         return redirect(url_for('main.index'))
     # Смена статуса заказа
-    order.status = 'Отменён'
+    order.status.set_status('Отменён')
     db.session.commit()
     flash('Заказ был успешно отменён')
     return redirect(url_for('main.index'))

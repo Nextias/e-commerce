@@ -17,26 +17,27 @@ categories = sa.Table(
               primary_key=True)
 )
 
-order_products = sa.Table(
-    'order_products',
-    db.metadata,
-    sa.Column('order_id', sa.Integer, sa.ForeignKey('order.id'),
-              primary_key=True),
-    sa.Column('product_id', sa.Integer, sa.ForeignKey('product.id'),
-              primary_key=True),
-    sa.Column('amount', sa.Integer, default=1)
-)
+
+class OrderProduct(db.Model):  # type: ignore[name-defined]
+    """ Модель БД таблица Many-To-Many продуктов в заказе. """
+    __tablename__ = 'order_products'
+
+    order_id: so.Mapped[int] = so.mapped_column(db.Integer, db.ForeignKey(
+        'order.id'), primary_key=True)
+    product_id: so.Mapped[int] = so.mapped_column(db.Integer, db.ForeignKey(
+        'product.id'), primary_key=True)
+    amount: so.Mapped[int] = so.mapped_column(db.Integer, default=1)
 
 
 class BasketProduct(db.Model):  # type: ignore[name-defined]
     """ Модель БД таблица Many-To-Many продуктов в корзине. """
     __tablename__ = 'basket_products'
 
-    basket_id = db.Column(db.Integer, db.ForeignKey(
+    basket_id: so.Mapped[int] = so.mapped_column(db.Integer, db.ForeignKey(
         'basket.id'), primary_key=True)
-    product_id = db.Column(db.Integer, db.ForeignKey(
+    product_id: so.Mapped[int] = so.mapped_column(db.Integer, db.ForeignKey(
         'product.id'), primary_key=True)
-    amount = db.Column(db.Integer, default=1)
+    amount: so.Mapped[int] = so.mapped_column(db.Integer, default=1)
 
 
 class Role(db.Model):  # type: ignore[name-defined]
@@ -140,11 +141,9 @@ class Product(db.Model):  # type: ignore[name-defined]
     photo_path: so.Mapped[Optional[str]] = so.mapped_column(sa.String(200))
     categories: so.Mapped[List['Category']] = so.relationship(
         secondary=categories,
-        primaryjoin='Product.id == categories.c.product_id',
-        secondaryjoin='Category.id == categories.c.category_id',
         back_populates='products')
     orders: so.Mapped[List['Order']] = so.relationship(
-        secondary=order_products,
+        secondary='order_products',
         back_populates='products'
     )
     baskets: so.Mapped[List['Basket']] = so.relationship(
@@ -162,12 +161,11 @@ class Product(db.Model):  # type: ignore[name-defined]
 
 class Category(db.Model):  # type: ignore[name-defined]
     """ Модель БД таблица category. """
+    __tablename__ = 'category'
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     name: so.Mapped[str] = so.mapped_column(sa.String(64), index=True)
     products: so.Mapped[List['Product']] = so.relationship(
         secondary=categories,
-        primaryjoin='Category.id == categories.c.category_id',
-        secondaryjoin='Product.id == categories.c.product_id',
         back_populates='categories')
 
     def __repr__(self):
@@ -176,6 +174,7 @@ class Category(db.Model):  # type: ignore[name-defined]
 
 class Basket(db.Model):  # type: ignore[name-defined]
     """ Модель БД таблица basket. """
+    __tablename__ = 'basket'
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
                                                index=True)
@@ -236,12 +235,19 @@ class Basket(db.Model):  # type: ignore[name-defined]
 
 class Order(db.Model):  # type: ignore[name-defined]
     """ Модель БД таблица order. """
+    __tablename__ = 'order'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.set_status()
+
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     order_number: so.Mapped[int] = so.mapped_column(unique=True, index=True)
     created_at: so.Mapped[Optional[datetime]] = so.mapped_column(
         default=lambda: datetime.now(timezone.utc))
     shipment_date: so.Mapped[Optional[date]] = so.mapped_column()
-    status: so.Mapped[str] = so.mapped_column(sa.String(10))
+    status_id: so.Mapped[int] = so.mapped_column(
+        sa.ForeignKey('order_status.id'), index=True)
     address: so.Mapped[Optional[str]] = so.mapped_column(sa.String(60))
     total_amount: so.Mapped[int] = so.mapped_column()
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
@@ -253,9 +259,38 @@ class Order(db.Model):  # type: ignore[name-defined]
         secondary='order_products',
         back_populates='orders'
     )
+    status: so.Mapped['OrderStatus'] = so.relationship(back_populates='orders')
     customer: so.Mapped[User] = so.relationship(back_populates='user_orders')
     basket: so.Mapped[Optional['Basket']] = so.relationship(
         back_populates='order')
+
+    def set_status(self, status_name: str = 'Создан') -> None:
+        """ Назначение роли.
+
+        Пример использования:
+        >>> order = Order()
+        >>> order.set_status('Создан')
+        """
+        status = db.session.scalar(sa.select(OrderStatus).where(
+            OrderStatus.name == status_name))
+        if status:
+            self.status = status
+        else:
+            raise ValueError(f"Статус '{status_name}' не найден")
+
+
+class OrderStatus(db.Model):  # type: ignore[name-defined]
+    """ Модель БД таблица order_status. """
+    __tablename__ = 'order_status'
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    name: so.Mapped[str] = so.mapped_column(sa.String(64), index=True)
+    orders: so.Mapped[List['Order']] = so.relationship(back_populates='status')
+
+    def __repr__(self):
+        return '<OrderStatus {}>'.format(self.name)
+
+    def __str__(self):
+        return self.name
 
 
 @login.user_loader
