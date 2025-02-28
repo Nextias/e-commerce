@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% import "bootstrap_wtf.html" as wtf %}
 {% block content %}
-<h2> Basket</h2>
+<h2> Корзина </h2>
 {% include 'main/_products_basket.html'%}
 <!-- Total Amount Section -->
     <div class="mt-4 p-3 bg-light rounded">
     <h4 class="d-flex justify-content-between align-items-center">
-        <span>Total Amount:</span>
+        <span> Общая стоимость:</span>
         <span id="total-amount">{{ total_amount }}</span>
     </h4>
     </div>

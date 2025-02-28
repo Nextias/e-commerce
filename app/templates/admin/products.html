@@ -2,7 +2,7 @@
     {% block content %}
      {% include 'admin/_nav.html'%}   
         <!-- Page Content -->
-        <h1>Products management</h1>
+        <h1>Управление товарами</h1>
 
         {% if products %}
         <style>
@@ -50,7 +50,7 @@
         <div class="d-flex justify-content-center mt-3">
             <div class="w-30">
                 <a href="{{ url_for('admin.create_product') }}" class="btn btn-primary mb-3">
-                    Add product
+                    Добавить товар
                 </a>
             </div>
         </div>

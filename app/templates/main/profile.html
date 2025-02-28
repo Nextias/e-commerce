@@ -13,12 +13,12 @@
                 <span class="corner-text">
                 <a href="{{ url_for('main.edit_profile') }}">Edit</a>
                 </span>
-                <p>Username: {{ current_user.username}}</p>
+                <p>Имя пользователя: {{ current_user.username}}</p>
                 <hr>
-                <p>Email: {{ current_user.email }} </p>
-                <p>Name: {{ current_user.first_name }} {{ current_user.last_name }}</p>
-                <p>Phone number: {{ current_user.phone_number}}</p>
-                <p>Address: {{ current_user.address}}</p>
+                <p>Адрес электронной почты: {{ current_user.email }} </p>
+                <p>Имя: {{ current_user.first_name }} {{ current_user.last_name }}</p>
+                <p>Номер телефона: {{ current_user.phone_number}}</p>
+                <p>Адрес: {{ current_user.address}}</p>
 
                 <hr>
                 <div class="profile-info">

@@ -183,13 +183,13 @@ def checkout():
     """ Отображение страницы подтверждения заказа. """
     form = CheckoutForm()  # Форма не прошла проверку
     if not form.validate_on_submit():
-        flash('validation error')
+        flash('Ошибка валидации')
         return redirect(url_for('main.basket'))
     # Получение информации об актуальной корзине покупателя
     basket = current_user.get_basket()
     basket_items = basket.get_basket_products()
     if not basket_items:  # Корзина пуста
-        flash('Basket is empty')
+        flash('Корзина пуста')
         return redirect(url_for('main.basket'))
     total_amount = basket.get_total_amount(basket_items)
     order_form = SubmitOrderForm()
@@ -204,7 +204,7 @@ def submit_order():
     """ Формирование заказа. """
     form = SubmitOrderForm()
     if not form.validate_on_submit():
-        flash('validation error')
+        flash('Ошибка валидации')
         return redirect(url_for('main.basket'))
     # Получение информации об актуальной корзине покупателя
     basket = current_user.get_basket()
@@ -214,12 +214,11 @@ def submit_order():
     for product, amount in basket_items.items():
         # Если товаров не хватает для оформления заказов
         if product.stock < amount:
-            flash('Not enough products in stock')
+            flash('В наличии недостаточно товаров для оформления заказа')
             return redirect(url_for('main.basket'))
         product.stock -= amount
     # Формирование заказа
     order = Order(order_number=basket.id,
-                  status='created',
                   shipment_date=form.shipment_date.data,
                   total_amount=total_amount,
                   user_id=current_user.id,
@@ -228,7 +227,7 @@ def submit_order():
     db.session.add(order)
     basket.active = False  # Смена статуса корзины с актуальной на архивную
     db.session.commit()  # Подтверждение всех действий с БД в рамках транзакции
-    flash('Your order was created')
+    flash('Ваш заказ был успешно оформлен')
     return redirect(url_for('main.index'))
 
 
@@ -238,7 +237,7 @@ def cancel_order(id):
     """ Отмена заказа. """
     form = CancelOrderForm()
     if not form.validate_on_submit():
-        flash('Error')
+        flash('Ошибка валидации')
         return redirect(url_for('main.index'))
     order = db.session.get(Order, int(id))
     if not order:  # Заказ не найден
@@ -247,11 +246,11 @@ def cancel_order(id):
     elif (current_user.role.name != 'admin'
           and current_user.id != order.user_id):
         abort(404)  # Посторонний не получает информацию о наличии заказа
-    if order.status == 'canceled':  # Заказ уже был отменён
-        flash('Order already canceled')
+    if order.status == 'Отменён':  # Заказ уже был отменён
+        flash('Заказ уже был ранее отменён')
         return redirect(url_for('main.index'))
     # Смена статуса заказа
-    order.status = 'canceled'
+    order.status = 'Отменён'
     db.session.commit()
-    flash('order cancelled successfully')
+    flash('Заказ был успешно отменён')
     return redirect(url_for('main.index'))

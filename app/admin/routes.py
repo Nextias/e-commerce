@@ -17,7 +17,7 @@ ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 
 def admin_only(f):
-    """ Декоратор проверки, что запрашивающий является админом. """
+    """ Декоратор для проверки, что запрашивающий является админом. """
     @wraps(f)
     def wrapper(*args, **kwargs):
         admin_role = db.session.scalar(
@@ -43,15 +43,15 @@ def upload_product_image(id):
         return redirect(url_for('main.product', id=id))
     product = db.session.get(Product, int(id))
     if product is None:  # Продукт не найден
-        flash('There is no such product')
+        flash(f'Продукт с id {id} не был найден')
         return redirect(request.url)
     # Проверка наличия файла
     if 'picture' not in request.files:
-        flash('No picture part')
+        flash('Отсутствует составляющая UploadForm picture')
         return redirect(request.url)
     file = request.files['picture']
     if file.filename == '':
-        flash('No selected file')
+        flash('Не выбран файл')
         return redirect(request.url)
     # Проверка файла
     if file and allowed_file(file.filename):
@@ -61,7 +61,7 @@ def upload_product_image(id):
             current_app.config['UPLOAD_FOLDER'], filename))
         product.photo_path = f'images/products/{filename}'
         db.session.commit()
-    flash('success')
+    flash('Файл был успешно загружен')
     return redirect(request.url)
 
 

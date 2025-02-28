@@ -8,8 +8,8 @@ from wtforms.validators import DataRequired, ValidationError
 class SubmitOrderForm(FlaskForm):
     address = StringField(validators=[DataRequired()])
     shipment_date = DateField(validators=[DataRequired()])
-    submit = SubmitField('Submit order')
+    submit = SubmitField('Оформить заказ')
 
     def validate_shipment_date(self, shipment_date):
         if shipment_date.data <= date.today():
-            raise ValidationError('Cannot be shipped that early.')
+            raise ValidationError('Мы не можем доставить заказ так скоро.')

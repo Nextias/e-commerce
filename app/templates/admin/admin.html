@@ -2,15 +2,15 @@
     {% block content %}
      {% include 'admin/_nav.html'%}   
         <!-- Page Content -->
-        <h1>Welcome to the Admin Panel</h1>
-        <p>This is where you can manage your e-commerce platform.</p>
+        <h1>Панель администратора</h1>
+        <p>Здесь вы можете настроить работу магазина.</p>
 
         <!-- Data Cards -->
         <div class="row">
           <div class="col-md-4">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">Total Products</h5>
+                <h5 class="card-title">Товаров</h5>
                 <p class="card-text">{{ products_amount }}</p>
               </div>
             </div>
@@ -18,7 +18,7 @@
           <div class="col-md-4">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">Total Orders</h5>
+                <h5 class="card-title">Заказов</h5>
                 <p class="card-text">{{ orders_amount }}</p>
               </div>
             </div>
@@ -26,7 +26,7 @@
           <div class="col-md-4">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">Total Users</h5>
+                <h5 class="card-title">Пользователей</h5>
                 <p class="card-text">{{ users_amount }}</p>
               </div>
             </div>

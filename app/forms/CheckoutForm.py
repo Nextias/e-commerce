@@ -3,4 +3,4 @@ from wtforms import SubmitField
 
 
 class CheckoutForm(FlaskForm):
-    submit = SubmitField('Proceed to Checkout')
+    submit = SubmitField('Перейти к подтверждению')

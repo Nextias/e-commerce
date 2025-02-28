@@ -5,11 +5,11 @@
 <div class="list-group-item">
     <div class="d-flex w-100 justify-content-between">
         <a href="{{ url_for('main.order', order_number=order.order_number) }}">
-            <h5 class="mb-1">Order {{ order.order_number }}</h5></a>
+            <h5 class="mb-1">Заказ {{ order.order_number }}</h5></a>
         <small></small>
     </div>
-    <p class="mb-1">Total amount: {{order.total_amount}}</p>
-    <small>Status: {{order.status}}</small>
+    <p class="mb-1">Общая стоимость: {{order.total_amount}}</p>
+    <small>Статус: {{order.status}}</small>
 </div>
 {% endfor%}
 {% endif %}

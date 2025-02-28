@@ -3,4 +3,4 @@ from wtforms import SubmitField
 
 
 class CancelOrderForm(FlaskForm):
-    submit = SubmitField('Cancel Order')
+    submit = SubmitField('Отмена заказа')
