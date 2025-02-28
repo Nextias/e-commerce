@@ -18,17 +18,6 @@ categories = sa.Table(
 )
 
 
-class OrderProduct(db.Model):  # type: ignore[name-defined]
-    """ Модель БД таблица Many-To-Many продуктов в заказе. """
-    __tablename__ = 'order_products'
-
-    order_id: so.Mapped[int] = so.mapped_column(db.Integer, db.ForeignKey(
-        'order.id'), primary_key=True)
-    product_id: so.Mapped[int] = so.mapped_column(db.Integer, db.ForeignKey(
-        'product.id'), primary_key=True)
-    amount: so.Mapped[int] = so.mapped_column(db.Integer, default=1)
-
-
 class BasketProduct(db.Model):  # type: ignore[name-defined]
     """ Модель БД таблица Many-To-Many продуктов в корзине. """
     __tablename__ = 'basket_products'
@@ -119,7 +108,6 @@ class User(UserMixin, db.Model):  # type: ignore[name-defined]
             .where(Basket.active.is_(True))
             .order_by(Basket.created_at)).all()
         if not active_baskets:  # Корзина отсутствует
-            print('create basket')
             basket = Basket(user_id=self.id, active=True)
             db.session.add(basket)
             db.session.commit()
@@ -142,10 +130,6 @@ class Product(db.Model):  # type: ignore[name-defined]
     categories: so.Mapped[List['Category']] = so.relationship(
         secondary=categories,
         back_populates='products')
-    orders: so.Mapped[List['Order']] = so.relationship(
-        secondary='order_products',
-        back_populates='products'
-    )
     baskets: so.Mapped[List['Basket']] = so.relationship(
         secondary='basket_products',
         back_populates='products'
@@ -254,11 +238,6 @@ class Order(db.Model):  # type: ignore[name-defined]
                                                index=True)
     basket_id: so.Mapped[Optional[int]] = so.mapped_column(
         sa.ForeignKey(Basket.id), nullable=True)
-
-    products: so.Mapped[List['Product']] = so.relationship(
-        secondary='order_products',
-        back_populates='orders'
-    )
     status: so.Mapped['OrderStatus'] = so.relationship(back_populates='orders')
     customer: so.Mapped[User] = so.relationship(back_populates='user_orders')
     basket: so.Mapped[Optional['Basket']] = so.relationship(
