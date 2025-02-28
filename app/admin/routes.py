@@ -17,6 +17,7 @@ ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 
 def admin_only(f):
+    """ Декоратор проверки, что запрашивающий является админом. """
     @wraps(f)
     def wrapper(*args, **kwargs):
         admin_role = db.session.scalar(
@@ -36,32 +37,29 @@ def allowed_file(filename):
 @bp.route('/admin/upload/image/product/<id>', methods=('GET', 'POST'))
 @admin_only
 def upload_product_image(id):
+    """ Загрузка изображения продукта. """
     form = UploadForm()
-    print(form, form.validate_on_submit())
     if not form.validate_on_submit():
         return redirect(url_for('main.product', id=id))
-    # check if the post request has the file part
-    print(request.files)
     product = db.session.get(Product, int(id))
-    if product is None:
+    if product is None:  # Продукт не найден
         flash('There is no such product')
         return redirect(request.url)
+    # Проверка наличия файла
     if 'picture' not in request.files:
         flash('No picture part')
         return redirect(request.url)
     file = request.files['picture']
-    # if user does not select file, browser also
-    # submit a empty part without filename
     if file.filename == '':
         flash('No selected file')
         return redirect(request.url)
+    # Проверка файла
     if file and allowed_file(file.filename):
+        # Сохранение файла в файловой системе и путь в БД
         filename = secure_filename(file.filename)
         file.save(os.path.join(
             current_app.config['UPLOAD_FOLDER'], filename))
-        print(current_user)
         product.photo_path = f'images/products/{filename}'
-        print(product.photo_path)
         db.session.commit()
     flash('success')
     return redirect(request.url)
@@ -71,6 +69,7 @@ def upload_product_image(id):
 @login_required
 @admin_only
 def admin():
+    """ Отображение панели администратора. """
     users_amount = db.session.query(func.count(User.id)).scalar()
     products_amount = db.session.query(func.count(Product.id)).scalar()
     orders_amount = db.session.query(func.count(Order.id)).scalar()
@@ -83,6 +82,7 @@ def admin():
 @login_required
 @admin_only
 def products():
+    """ Отображение списка продуктов в панели администратора. """
     products = db.session.scalars(sa.select(Product))
     return render_template('admin/products.html', products=products)
 
@@ -91,4 +91,5 @@ def products():
 @login_required
 @admin_only
 def create_product():
+    """ Отображение страницы создания продукта. """
     return render_template('admin/create_product.html')
