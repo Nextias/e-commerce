@@ -250,7 +250,7 @@ def cancel_order(id):
         flash('Заказ уже был ранее отменён')
         return redirect(url_for('main.index'))
     # Смена статуса заказа
-    order.status.set_status('Отменён')
+    order.set_status('Отменён')
     db.session.commit()
     flash('Заказ был успешно отменён')
     return redirect(url_for('main.index'))

@@ -221,9 +221,9 @@ class Order(db.Model):  # type: ignore[name-defined]
     """ Модель БД таблица order. """
     __tablename__ = 'order'
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, status_name: str = 'Создан', **kwargs):
         super().__init__(*args, **kwargs)
-        self.set_status()
+        self.set_status(status_name)
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     order_number: so.Mapped[int] = so.mapped_column(unique=True, index=True)
