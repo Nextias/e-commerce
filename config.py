@@ -20,3 +20,8 @@ class Config:
     LANGUAGES = ['en', 'ru']
     UPLOAD_FOLDER = imagesdir
     MS_TRANSLATOR_KEY = os.environ.get('MS_TRANSLATOR_KEY')
+
+
+class TestConfig:
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite://'
