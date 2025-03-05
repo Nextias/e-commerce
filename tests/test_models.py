@@ -31,7 +31,9 @@ def create_example_product():
 
 
 def create_example_basket():
-    """ Создание примера корзины с товаром. """
+    """ Создание примера корзины с товаром.
+    Для инициализации и наполнения корзины создаются пользователь и товар.
+    """
     # Создаём пользователя
     user = create_example_user()
     db.session.add(user)
@@ -47,7 +49,9 @@ def create_example_basket():
 
 
 def create_example_order():
-    """ Создание примера заказа с товаром. """
+    """ Создание примера заказа с товаром.
+    Для создания заказа создаётся корзина.
+    """
     basket = create_example_basket()
     # Создаём заказ
     status = OrderStatus(name='status')
