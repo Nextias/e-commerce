@@ -6,8 +6,8 @@ from wtforms.validators import DataRequired, ValidationError
 
 
 class SubmitOrderForm(FlaskForm):
-    address = StringField(validators=[DataRequired()])
-    shipment_date = DateField(validators=[DataRequired()])
+    address = StringField('Адрес', validators=[DataRequired()])
+    shipment_date = DateField('Дата доставки', validators=[DataRequired()])
     submit = SubmitField('Оформить заказ')
 
     def validate_shipment_date(self, shipment_date):
