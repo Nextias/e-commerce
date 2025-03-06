@@ -146,7 +146,10 @@ def add_item(product_id):
     db.session.add(basket_item)
     db.session.commit()
     total_amount = (basket.get_total_amount()
-                    if 'basket' in request.headers.get('Referer') else None)
+                    if request.headers.get('Referer')
+                    and 'basket' in request.headers.get('Referer')
+                    else None
+                    )
     return jsonify(amount=basket_item.amount, total_amount=total_amount)
 
 
@@ -167,7 +170,10 @@ def remove_item(product_id):
     ))
     basket_item.amount = basket_item.amount - 1
     total_amount = (basket.get_total_amount()
-                    if 'basket' in request.headers.get('Referer') else 0)
+                    if request.headers.get('Referer')
+                    and 'basket' in request.headers.get('Referer')
+                    else None
+                    )
     if basket_item.amount < 1:
         db.session.delete(basket_item)
         db.session.commit()
@@ -228,7 +234,7 @@ def submit_order():
     basket.active = False  # Смена статуса корзины с актуальной на архивную
     db.session.commit()  # Подтверждение всех действий с БД в рамках транзакции
     flash('Ваш заказ был успешно оформлен')
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.order', order_number=order.order_number))
 
 
 @login_required

@@ -26,6 +26,7 @@ class TestConfig:
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
     WTF_CSRF_ENABLED = False
+    WTF_CSRF_METHODS: list = []
     SECRET_KEY = 'you-will-never-guess'
     # Required for URL generation
     SERVER_NAME = 'localhost:5000'  # Replace with your server name
