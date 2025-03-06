@@ -60,8 +60,9 @@
   {%- if novalidate %} novalidate{% endif -%}
   {%- if enctype %}enctype="{{ enctype }}"{% endif -%}
 >
-
-  {{ form.hidden_tag() }}
+  {% if form.hidden_tag() %}
+    {{ form.hidden_tag() }}
+  {% endif %}
   {%- for field, errors in form.errors.items() %}
     {%- if form[field].widget.input_type == 'hidden' %}
       {%- for error in errors %}

@@ -15,18 +15,18 @@
             </div>
             {% endif %}
         </div>
-        <p class="mb-1">Price: {{ product.price }}</p>
-        <p class="mb-1">Description: {{ product.description }}</p>
+        <p class="mb-1">Цена: {{ product.price }}</p>
+        <p class="mb-1">Описание: {{ product.description }}</p>
         {% if product.photo_path %}
         {% set filename = product.photo_path %}
         <img src="{{url_for('static', filename=filename)}}" alt="{{ product.name }}" class="img-fluid" style="max-width: 100%; max-height: 300px;">
         {% endif %}
         <div class="mt-3">
-            <h4>Details</h4>
+            <h4>Информация о товаре</h4>
             <ul>
-                <li>Category: {{ product.category }}</li>
-                <li>Brand: {{ product.brand }}</li>
-                <li>Stock: {{ product.stock }}</li>
+                <li>Категория: {{ product.category }}</li>
+                <li>Фирма: {{ product.brand }}</li>
+                <li>В наличии: {{ product.stock }}</li>
             </ul>
         </div>
         {% if current_user.role.name == 'admin' %}
@@ -34,14 +34,14 @@
         {{ wtf.quick_form(form, action=form_action, id=product.id, enctype="multipart/form-data") }}
         {% endif %}
         <div class="mt-3">
-            <h4>Reviews</h4>
+            <h4>Отзывы</h4>
             {% if product.reviews %}
                 {% for review in product.reviews %}
                     <div class="card mb-2">
                         <div class="card-body">
                             <h5 class="card-title">{{ review.user.username }}</h5>
                             <p class="card-text">{{ review.comment }}</p>
-                            <p class="card-text"><small class="text-muted">Rating: {{ review.rating }}/5</small></p>
+                            <p class="card-text"><small class="text-muted">Рейтинг: {{ review.rating }}/5</small></p>
                         </div>
                     </div>
                 {% endfor %}

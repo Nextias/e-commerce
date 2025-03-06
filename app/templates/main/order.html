@@ -3,7 +3,7 @@
 {% block content %}
 <h2> Order {{order.order_number}} </h2>
 <h5 class="mb-1">Дата доставки: {{ order.shipment_date }}</h5>
-<h5 class="mb-1">Статус: {{ order.status }}</h5>
+<h5 class="mb-1", id='order_status'>Статус: {{ order.status }}</h5>
 {% include 'main/_products_basket.html'%}
 <!-- Total Amount Section -->
 <div class="mt-4 p-3 bg-light rounded">
