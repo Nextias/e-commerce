@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, timedelta
 from typing import Dict, List, Optional
 
 import sqlalchemy as sa
@@ -215,6 +215,12 @@ class Basket(db.Model):  # type: ignore[name-defined]
         basket_items = basket_items or self.get_basket_products()
         return sum(product.price * amount
                    for product, amount in basket_items.items())
+
+    def get_shipment_date(self, address=''):
+        """Расчёт даты доставки.
+        В текущей версии дата рассчитывается как сегодняшний день + 7 дней
+        """
+        return date.today() + timedelta(days=7)
 
 
 class Order(db.Model):  # type: ignore[name-defined]

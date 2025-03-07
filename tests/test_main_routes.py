@@ -1,10 +1,9 @@
 import unittest
-from datetime import date, timedelta
 
 from flask import url_for
 
 from app import create_app, db
-from app.models import Product, Role, User, OrderStatus, Order
+from app.models import Order, OrderStatus, Product, Role, User
 from config import TestConfig
 
 
@@ -74,11 +73,11 @@ class TestMainRoutes(unittest.TestCase):
             url_for('main.remove_item', product_id=product_id)
         )
 
-    def submit_order(self, address, shipment_date):
+    def submit_order(self, address):
         """Создать заказ."""
         return self.client.post(
             url_for('main.submit_order'),
-            data=dict(address=address, shipment_date=shipment_date),
+            data=dict(address=address),
             follow_redirects=True
         )
 
@@ -176,7 +175,7 @@ class TestMainRoutes(unittest.TestCase):
 
         # Проверяем, что на странице есть необходимые элементы
         self.assertIn('address', response.data.decode('utf-8'))
-        self.assertIn('shipment_date', response.data.decode('utf-8'))
+        self.assertIn('shipment-date', response.data.decode('utf-8'))
         self.assertIn('/submit_order', response.data.decode('utf-8'))
 
         # Проверяем, что продукт присутствует на странице оформления заказа
@@ -187,8 +186,7 @@ class TestMainRoutes(unittest.TestCase):
         """Проверка создания заказа и загрузки страницы заказа."""
         # Создание заказа
         self.add_product(self.product.id)
-        response = self.submit_order('address', date.today()
-                                     + timedelta(days=1))
+        response = self.submit_order('address')
         self.assertEqual(response.status_code, 200)
         # Предполагается наличие данных заказа
         self.assertIn('order_status', response.data.decode('utf-8'))
@@ -199,8 +197,7 @@ class TestMainRoutes(unittest.TestCase):
         """Проверка отмены заказа."""
         # Создание заказа
         self.add_product(self.product.id)
-        self.submit_order('address', date.today()
-                          + timedelta(days=1))
+        self.submit_order('address')
         retrievew_order = Order.query.first()
         response = self.cancel_order(id=retrievew_order.id)
         self.assertEqual(response.status_code, 200)
