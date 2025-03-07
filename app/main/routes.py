@@ -5,7 +5,7 @@ from flask_login import current_user, login_required
 
 from app import db
 from app.forms import (CancelOrderForm, CheckoutForm, EditProfileForm,
-                       SubmitOrderForm, UploadForm)
+                       EditStockForm, SubmitOrderForm, UploadForm)
 from app.main import bp
 from app.models import Basket, BasketProduct, Order, Product
 
@@ -24,6 +24,7 @@ def index():
 def product(id):
     """ Отображение информации о товаре по id. """
     form = UploadForm()
+    edit_stock_form = EditStockForm()
     product = db.session.get(Product, int(id))
     if product is None:  # Продукт не найден
         abort(404)
@@ -37,7 +38,7 @@ def product(id):
     amount = basket_item.amount if basket_item else 0
     return render_template('main/product.html', product=product,
                            categories=categories_list, amount=amount,
-                           form=form)
+                           form=form, edit_stock_form=edit_stock_form)
 
 
 @bp.route('/profile', methods=('GET', 'POST'))
@@ -187,8 +188,8 @@ def remove_item(product_id):
 @bp.route('/checkout/', methods=('GET', 'POST'))
 def checkout():
     """ Отображение страницы подтверждения заказа. """
-    form = CheckoutForm()  # Форма не прошла проверку
-    if not form.validate_on_submit():
+    form = CheckoutForm()
+    if not form.validate_on_submit():  # Форма не прошла проверку
         flash('Ошибка валидации')
         return redirect(url_for('main.basket'))
     # Получение информации об актуальной корзине покупателя
@@ -198,10 +199,12 @@ def checkout():
         flash('Корзина пуста')
         return redirect(url_for('main.basket'))
     total_amount = basket.get_total_amount(basket_items)
+    shipment_date = basket.get_shipment_date()
     order_form = SubmitOrderForm()
     order_form.address.data = current_user.address
     return render_template('main/checkout.html', products=basket_items,
-                           total_amount=total_amount, form=order_form)
+                           total_amount=total_amount, form=order_form,
+                           shipment_date=shipment_date)
 
 
 @login_required
@@ -225,7 +228,7 @@ def submit_order():
         product.stock -= amount
     # Формирование заказа
     order = Order(order_number=basket.id,
-                  shipment_date=form.shipment_date.data,
+                  shipment_date=basket.get_shipment_date(),
                   total_amount=total_amount,
                   user_id=current_user.id,
                   address=form.address.data,

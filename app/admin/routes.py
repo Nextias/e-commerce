@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 
 from app import db
 from app.admin import bp
-from app.forms import UploadForm
+from app.forms import AddProductForm, UploadForm, EditStockForm
 from app.models import Order, Product, Role, User
 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
@@ -92,4 +92,33 @@ def products():
 @admin_only
 def create_product():
     """ Отображение страницы создания продукта. """
-    return render_template('admin/create_product.html')
+    form = AddProductForm()
+    if form.validate_on_submit():
+        # Добавление продукта в базу
+        product = Product(name=form.name.data,
+                          price=form.price.data,
+                          stock=form.stock.data,
+                          brand=form.brand.data,
+                          description=form.description.data
+                          )
+        db.session.add(product)
+        db.session.commit()
+        flash('Товар успешно добавлен')
+        return redirect(url_for('admin.products'))
+    return render_template('admin/create_product.html', form=form)
+
+
+@bp.route('/admin/edit_stock/<id>', methods=('GET', 'POST'))
+@login_required
+@admin_only
+def edit_stock(id):
+    """ Отображение страницы создания продукта. """
+    form = EditStockForm()
+    if form.validate_on_submit():
+        product = db.session.get(Product, id)
+        product.stock = form.amount.data
+        db.session.commit()
+        flash('Количество товаров в наличии успешно изменено'
+              f' на {product.stock}.')
+        return redirect(url_for('main.product', id=id))
+    return redirect(url_for('main.product', id=id))

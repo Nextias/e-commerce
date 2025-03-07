@@ -3,11 +3,11 @@ import unittest
 from flask import url_for
 
 from app import create_app, db
-from app.models import OrderStatus, Role, User
+from app.models import OrderStatus, Role, User, Product
 from config import TestConfig
 
 
-class TestMainRoutes(unittest.TestCase):
+class TestAdminRoutes(unittest.TestCase):
     # Определения констант тестового пользователя
     USERNAME = 'user'
     EMAIL = 'user@example.com'
@@ -61,3 +61,70 @@ class TestMainRoutes(unittest.TestCase):
                       remember_me=remember_me),
             follow_redirects=True
         )
+
+    def edit_stock(self, product_id, amount):
+        return self.client.post(
+            url_for('admin.edit_stock', id=product_id),
+            data=dict(amount=amount),
+            follow_redirects=True
+        )
+
+    def create_product(self, name, description, price, brand, stock):
+        return self.client.post(
+            url_for('admin.create_product'),
+            data=dict(name=name, description=description, price=price,
+                      brand=brand, stock=stock),
+            follow_redirects=True
+        )
+
+    def test_admin_page_loads(self):
+        """Проверка загрузки главной страницы Панели Администратора."""
+        response = self.client.get(url_for('admin.admin'))
+        self.assertEqual(response.status_code, 200)
+        # Предполагается наличие полей
+        self.assertIn('Панель администратора', response.data.decode('utf-8'))
+        self.assertIn('Товаров', response.data.decode('utf-8'))
+        self.assertIn('Заказов', response.data.decode('utf-8'))
+        self.assertIn('Пользователей', response.data.decode('utf-8'))
+
+    def test_products_loads(self):
+        """Проверка загрузки страницы продуктов."""
+        response = self.client.get(url_for('admin.products'))
+        self.assertEqual(response.status_code, 200)
+        # Предполагается наличие полей формы
+        self.assertIn('Управление товарами', response.data.decode('utf-8'))
+        self.assertIn('ID', response.data.decode('utf-8'))
+        self.assertIn('Name', response.data.decode('utf-8'))
+        self.assertIn('Brand', response.data.decode('utf-8'))
+        self.assertIn('Stock', response.data.decode('utf-8'))
+
+    def test_create_product_loads(self):
+        """Проверка страницы добавления продуктов."""
+
+    def test_edit_stock(self):
+        self.create_product('product', 'description', 1000, 'brand',
+                                       20)
+        product = Product.query.first()
+        # Изменяем количество товара на валидное
+        self.edit_stock(product.id, 1000)
+        product = Product.query.first()
+        self.assertEqual(product.stock, 1000)
+        # Пытаемся изменить количество товара на отрицательное
+        self.edit_stock(product.id, -100)
+        product = Product.query.first()
+        self.assertEqual(product.stock, 1000)
+
+    def test_create_product(self):
+        response = self.create_product('product', 'description', 1000, 'brand',
+                                       20)
+        self.assertEqual(response.status_code, 200)
+        # Предполагается наличие нового товара в управлении товарами
+        self.assertIn('Управление товарами', response.data.decode('utf-8'))
+        self.assertIn('product', response.data.decode('utf-8'))
+        self.assertIn('1000', response.data.decode('utf-8'))
+        self.assertIn('brand', response.data.decode('utf-8'))
+        self.assertIn('20', response.data.decode('utf-8'))
+
+
+if __name__ == '__main__':
+    unittest.main()
