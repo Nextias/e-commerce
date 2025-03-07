@@ -2,7 +2,6 @@ import unittest
 from datetime import date, timedelta
 
 from flask import url_for
-from flask_login import current_user
 
 from app import create_app, db
 from app.models import Product, Role, User, OrderStatus, Order
