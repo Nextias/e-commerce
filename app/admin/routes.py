@@ -83,7 +83,7 @@ def admin():
 @login_required
 @admin_only
 def products():
-    """ Отображение списка продуктов в панели администратора. """
+    """Отображение товаров в панели администратора."""
     products = db.session.scalars(sa.select(Product))
     return render_template('admin/products.html', products=products)
 
@@ -171,3 +171,26 @@ def edit_product(id):
     form.description.data = product.description
     form.categories.data = [category.name for category in product.categories]
     return render_template('admin/edit_product.html/', form=form)
+
+
+@bp.route('/admin/delete_product/<id>', methods=('GET', 'POST'))
+@login_required
+@admin_only
+def delete_product(id):
+    """Удаление товара по id. """
+    product = db.session.get(Product, int(id))
+    if product is None:
+        return redirect(url_for('admin.products'))
+    db.session.delete(product)
+    db.session.commit()
+    flash('Удаление успешно завершено.')
+    return redirect(url_for('admin.products'))
+
+
+@bp.route('/admin/orders', methods=('GET', 'POST'))
+@login_required
+@admin_only
+def orders():
+    """Отображение заказов в панели администратора. """
+    orders = db.session.scalars(sa.select(Order))
+    return render_template('admin/orders.html', orders=orders)

@@ -85,6 +85,12 @@ class TestAdminRoutes(unittest.TestCase):
             follow_redirects=True
         )
 
+    def delete_product(self, id):
+        return self.client.post(
+            url_for('admin.delete_product', id=id),
+            follow_redirects=True
+        )
+
     def test_admin_page_loads(self):
         """Проверка загрузки главной страницы Панели Администратора."""
         response = self.client.get(url_for('admin.admin'))
@@ -100,11 +106,12 @@ class TestAdminRoutes(unittest.TestCase):
         response = self.client.get(url_for('admin.products'))
         self.assertEqual(response.status_code, 200)
         # Предполагается наличие полей
-        self.assertIn('Управление товарами', response.data.decode('utf-8'))
+        self.assertIn('product-table', response.data.decode('utf-8'))
         self.assertIn('ID', response.data.decode('utf-8'))
-        self.assertIn('Name', response.data.decode('utf-8'))
-        self.assertIn('Brand', response.data.decode('utf-8'))
-        self.assertIn('Stock', response.data.decode('utf-8'))
+        self.assertIn('Название', response.data.decode('utf-8'))
+        self.assertIn('Бренд', response.data.decode('utf-8'))
+        self.assertIn('Количество', response.data.decode('utf-8'))
+        self.assertIn('Наличие', response.data.decode('utf-8'))
 
     def test_create_product_loads(self):
         """Проверка загрузки страницы добавления продуктов."""
@@ -123,6 +130,15 @@ class TestAdminRoutes(unittest.TestCase):
 
     def test_orders_loads(self):
         """Проверка загрузки страницы заказов."""
+        response = self.client.get(url_for('admin.orders'))
+        self.assertEqual(response.status_code, 200)
+        # Предполагается наличие полей формы
+        self.assertIn('order-table', response.data.decode('utf-8'))
+        self.assertIn('ID', response.data.decode('utf-8'))
+        self.assertIn('Номер заказа', response.data.decode('utf-8'))
+        self.assertIn('Сумма', response.data.decode('utf-8'))
+        self.assertIn('Дата доставки', response.data.decode('utf-8'))
+        self.assertIn('Статус', response.data.decode('utf-8'))
 
     def test_users_loads(self):
         """Проверка загрузки страницы пользователей."""
@@ -144,6 +160,14 @@ class TestAdminRoutes(unittest.TestCase):
 
     def test_delete_product(self):
         """Проверка удаления продукта."""
+        self.create_product('product', 'description', 1000, 'brand',
+                                       20)
+        product = Product.query.first()
+        response = self.delete_product(product.id)
+        self.assertEqual(response.status_code, 200)
+        # Предполагается, что в базе нет товаров после удалению
+        product = Product.query.first()
+        self.assertTrue(product is None)
 
     def test_edit_stock(self):
         """Проверка изменения количества продуктов в наличии."""

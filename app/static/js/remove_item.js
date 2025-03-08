@@ -22,6 +22,9 @@ async function remove_product(productId, elementId, parentId) {
             if (newAmount > 0){
             amountElement.textContent = newAmount;
             }
+            else{
+                amountElement.textContent = ''
+            }
         }
         else{
                 console.error('Element not found');
