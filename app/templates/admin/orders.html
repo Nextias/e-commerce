@@ -1,0 +1,53 @@
+{% extends "admin/base.html" %}
+    {% block content %}   
+        <!-- Page Content -->
+        <h1>Управление товарами</h1>
+
+        {% if orders %}
+        <style>
+            .order-table {
+                width: 100%;
+                border-collapse: collapse; /* Ensures borders are merged */
+            }
+            .order-table th, .order-table td {
+                border: 1px solid #ddd; /* Adds a light gray border */
+                padding: 8px; /* Adds spacing inside cells */
+                text-align: left; /* Aligns text to the left */
+            }
+            .order-table th {
+                background-color: #f2f2f2; /* Adds a light gray background to headers */
+            }
+            .order-table tr:nth-child(even) {
+                background-color: #f9f9f9; /* Adds a zebra-striping effect */
+            }
+            .order-table tr:hover {
+                background-color: #eaeaea; /* Adds a hover effect */
+            }
+        </style>
+        
+        <table class="order-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Номер заказа</th>
+                    <th>Сумма</th>
+                    <th>Дата доставки</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td><a href="{{url_for('main.order', order_number=order.order_number)}}">{{order.id}}</a></td>
+                    <td>{{order.order_number}}</td>
+                    <td>{{order.total_amount}}</td>
+                    <td>{{order.shipment_date}}</td>
+                    <td>{{order.status}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+  {% endblock %}
+

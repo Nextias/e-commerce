@@ -226,8 +226,7 @@ def submit_order():
             return redirect(url_for('main.basket'))
         product.stock -= amount
     # Формирование заказа
-    order = Order(order_number=basket.id,
-                  shipment_date=basket.get_shipment_date(),
+    order = Order(shipment_date=basket.get_shipment_date(),
                   total_amount=total_amount,
                   user_id=current_user.id,
                   address=form.address.data,

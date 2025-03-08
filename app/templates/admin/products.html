@@ -1,6 +1,5 @@
 {% extends "admin/base.html" %}
-    {% block content %}
-     {% include 'admin/_nav.html'%}   
+    {% block content %}   
         <!-- Page Content -->
         <h1>Управление товарами</h1>
 
@@ -47,7 +46,7 @@
                     <td>{{ product.stock }}</td>
                     <td>
                         <a href="{{url_for('admin.edit_product', id=product.id)}}">Редактировать</a>/
-                        <a href="" onclick="return confirm('Вы уверены?')">Удалить</a>
+                        <a href="{{url_for('admin.delete_product', id=product.id)}}" onclick="return confirm('Вы уверены?')">Удалить</a>
                     </td>
                 </tr>
                 {% endfor %}

@@ -2,13 +2,13 @@
   <div class="row">
 <!-- Sidebar -->
 <div class="col-md-2 sidebar">
-  <h3>Панель администратора</h3>
+  <a class="nav-link" href="{{url_for('admin.admin')}}"><h3>Панель администратора</h3></a>
   <ul class="nav flex-column">
     <li class="nav-item">
       <a class="nav-link" href="{{ url_for('admin.products')}}">Товары</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" href="#">Заказы</a>
+      <a class="nav-link" href="{{ url_for('admin.orders')}}">Заказы</a>
     </li>
     <li class="nav-item">
       <a class="nav-link" href="#">Пользователи</a>

@@ -1,6 +1,6 @@
 from datetime import date, datetime, timezone, timedelta
 from typing import Dict, List, Optional
-
+import uuid
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 from flask_login import UserMixin
@@ -233,7 +233,10 @@ class Order(db.Model):  # type: ignore[name-defined]
         self.set_status(status_name)
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    order_number: so.Mapped[int] = so.mapped_column(unique=True, index=True)
+    order_number: so.Mapped[int] = so.mapped_column(
+        sa.String(40), unique=True,
+        index=True, default=lambda: str(uuid.uuid4())
+    )
     created_at: so.Mapped[Optional[datetime]] = so.mapped_column(
         default=lambda: datetime.now(timezone.utc))
     shipment_date: so.Mapped[Optional[date]] = so.mapped_column()

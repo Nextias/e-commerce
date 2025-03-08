@@ -10,6 +10,14 @@
   <style> @import url("{{ url_for('static', filename='css/admin.css') }}") </style>
 </head>
 <body>
+  {% include 'admin/_nav.html'%}
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for message in messages %}
+      {{ message }}
+    {% endfor %}
+  {% endif %}
+{% endwith %}
     {% block content %}{% endblock%}
   <!-- Bootstrap JS and dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
