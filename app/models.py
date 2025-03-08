@@ -189,13 +189,14 @@ class Basket(db.Model):  # type: ignore[name-defined]
             .where(BasketProduct.basket_id == self.id)
         ).all()
         for basket_product, product in basket_products:
-            # Если в наличии меньшее количество товара, чем в корзине
-            if basket_product.amount > product.stock:
-                basket_product.amount = product.stock
-            # Если количество товара в корзине равно нулю
-            if not basket_product.amount:
-                db.session.delete(basket_product)
-            db.session.commit()
+            if self.active:  # Корзина изменяется только если активна
+                # Если в наличии меньшее количество товара, чем в корзине
+                if basket_product.amount > product.stock:
+                    basket_product.amount = product.stock
+                # Если количество товара в корзине равно нулю
+                if not basket_product.amount:
+                    db.session.delete(basket_product)
+                db.session.commit()
             basket_items[product] = basket_product.amount
 
         return basket_items

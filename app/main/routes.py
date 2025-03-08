@@ -260,6 +260,11 @@ def cancel_order(id):
         return redirect(url_for('main.index'))
     # Смена статуса заказа
     order.set_status('Отменён')
+    # Возвращение количества товаров в наличие
+    basket = order.basket
+    basket_items = basket.get_basket_products()
+    for product, amount in basket_items.items():
+        product.stock += amount
     db.session.commit()
     flash('Заказ был успешно отменён')
     return redirect(url_for('main.index'))
