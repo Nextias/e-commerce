@@ -11,7 +11,7 @@
         <div class="d-flex gap-2 justify-content-center">
             <span class="badge bg-primary rounded-pill" id='amount-{{ product.id }}'>
                 {% if products[product] %}{{products[product]}}{% endif %}
-                {% if not product.stock %} Нет в наличии {% endif%} 
+                {% if not product.stock and modify_amount %} Нет в наличии {% endif%} 
             </span>
             {% if modify_amount %}
             <button class="btn btn-sm btn-outline-success" id='add-{{ product.id }}',
