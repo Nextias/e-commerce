@@ -77,6 +77,14 @@ class TestAdminRoutes(unittest.TestCase):
             follow_redirects=True
         )
 
+    def edit_product(self, id, name, description, price, brand):
+        return self.client.post(
+            url_for('admin.edit_product', id=id),
+            data=dict(name=name, description=description, price=price,
+                      brand=brand),
+            follow_redirects=True
+        )
+
     def test_admin_page_loads(self):
         """Проверка загрузки главной страницы Панели Администратора."""
         response = self.client.get(url_for('admin.admin'))
@@ -91,7 +99,7 @@ class TestAdminRoutes(unittest.TestCase):
         """Проверка загрузки страницы продуктов."""
         response = self.client.get(url_for('admin.products'))
         self.assertEqual(response.status_code, 200)
-        # Предполагается наличие полей формы
+        # Предполагается наличие полей
         self.assertIn('Управление товарами', response.data.decode('utf-8'))
         self.assertIn('ID', response.data.decode('utf-8'))
         self.assertIn('Name', response.data.decode('utf-8'))
@@ -99,9 +107,46 @@ class TestAdminRoutes(unittest.TestCase):
         self.assertIn('Stock', response.data.decode('utf-8'))
 
     def test_create_product_loads(self):
-        """Проверка страницы добавления продуктов."""
+        """Проверка загрузки страницы добавления продуктов."""
+        response = self.client.get(url_for('admin.create_product'))
+        self.assertEqual(response.status_code, 200)
+        # Предполагается наличие полей формы
+        self.assertIn('Добавить товар', response.data.decode('utf-8'))
+        self.assertIn('name', response.data.decode('utf-8'))
+        self.assertIn('price', response.data.decode('utf-8'))
+        self.assertIn('stock', response.data.decode('utf-8'))
+        self.assertIn('brand', response.data.decode('utf-8'))
+        self.assertIn('submit', response.data.decode('utf-8'))
+
+    def test_edit_product_loads(self):
+        """Проверка загрузки страницы редактирования продуктов."""
+
+    def test_orders_loads(self):
+        """Проверка загрузки страницы заказов."""
+
+    def test_users_loads(self):
+        """Проверка загрузки страницы пользователей."""
+
+    def test_edit_user_loads(self):
+        """Проверка загрузки страницы редактирования пользователя."""
+
+    def test_create_product(self):
+        """Проверка добавления нового продукта."""
+        response = self.create_product('product', 'description', 1000, 'brand',
+                                       20)
+        self.assertEqual(response.status_code, 200)
+        # Предполагается наличие нового товара в управлении товарами
+        self.assertIn('Управление товарами', response.data.decode('utf-8'))
+        self.assertIn('product', response.data.decode('utf-8'))
+        self.assertIn('1000', response.data.decode('utf-8'))
+        self.assertIn('brand', response.data.decode('utf-8'))
+        self.assertIn('20', response.data.decode('utf-8'))
+
+    def test_delete_product(self):
+        """Проверка удаления продукта."""
 
     def test_edit_stock(self):
+        """Проверка изменения количества продуктов в наличии."""
         self.create_product('product', 'description', 1000, 'brand',
                                        20)
         product = Product.query.first()
@@ -114,16 +159,38 @@ class TestAdminRoutes(unittest.TestCase):
         product = Product.query.first()
         self.assertEqual(product.stock, 1000)
 
-    def test_create_product(self):
+    def test_edit_product(self):
+        """Проверка редактирования товара."""
         response = self.create_product('product', 'description', 1000, 'brand',
                                        20)
+        product = Product.query.first()
+        response = self.edit_product(product.id, 'product2', 'description2',
+                                     1000500, 'brand2')
         self.assertEqual(response.status_code, 200)
-        # Предполагается наличие нового товара в управлении товарами
-        self.assertIn('Управление товарами', response.data.decode('utf-8'))
-        self.assertIn('product', response.data.decode('utf-8'))
-        self.assertIn('1000', response.data.decode('utf-8'))
-        self.assertIn('brand', response.data.decode('utf-8'))
-        self.assertIn('20', response.data.decode('utf-8'))
+        # Предполагается наличие обновлённых значений в информации о товаре
+        self.assertIn('Информация о товаре', response.data.decode('utf-8'))
+        self.assertIn('product2', response.data.decode('utf-8'))
+        self.assertIn('description2', response.data.decode('utf-8'))
+        self.assertIn('1000500', response.data.decode('utf-8'))
+        self.assertIn('brand2', response.data.decode('utf-8'))
+
+    def test_confirm_order(self):
+        """Проверка подтверждения заказа."""
+
+    def test_cancel_order(self):
+        """Проверка отмены заказа."""
+
+    def test_finish_order(self):
+        """Проверка завершения заказа."""
+
+    def test_edit_user(self):
+        """Проверка редактирования пользователя."""
+
+    def test_ban_user(self):
+        """Проверка блокировки пользователя."""
+
+    def test_delete_user(self):
+        """Проверка удаления пользователя."""
 
 
 if __name__ == '__main__':

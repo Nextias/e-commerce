@@ -10,8 +10,9 @@ from werkzeug.utils import secure_filename
 
 from app import db
 from app.admin import bp
-from app.forms import AddProductForm, UploadForm, EditStockForm
-from app.models import Order, Product, Role, User
+from app.forms import (CreateProductForm, EditProductForm, EditStockForm,
+                       UploadForm)
+from app.models import Order, Product, Role, User, Category
 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
@@ -42,7 +43,7 @@ def upload_product_image(id):
     if not form.validate_on_submit():
         return redirect(url_for('main.product', id=id))
     product = db.session.get(Product, int(id))
-    if product is None:  # Продукт не найден
+    if product is None:  # Товар не найден
         flash(f'Продукт с id {id} не был найден')
         return redirect(request.url)
     # Проверка наличия файла
@@ -91,8 +92,11 @@ def products():
 @login_required
 @admin_only
 def create_product():
-    """ Отображение страницы создания продукта. """
-    form = AddProductForm()
+    """ Отображение страницы создания товара. """
+    form = CreateProductForm()
+    # Формирование списка категорий
+    categories = db.session.scalars(sa.select(Category))
+    form.categories.choices = [category.name for category in categories]
     if form.validate_on_submit():
         # Добавление продукта в базу
         product = Product(name=form.name.data,
@@ -101,6 +105,12 @@ def create_product():
                           brand=form.brand.data,
                           description=form.description.data
                           )
+        categories = db.session.scalars(
+            sa.select(Category).where(
+                Category.name.in_(form.categories.data)
+            )
+        ).all()
+        product.categories = categories
         db.session.add(product)
         db.session.commit()
         flash('Товар успешно добавлен')
@@ -112,7 +122,7 @@ def create_product():
 @login_required
 @admin_only
 def edit_stock(id):
-    """ Отображение страницы создания продукта. """
+    """ Отображение страницы редактирования продуктов в наличии. """
     form = EditStockForm()
     if form.validate_on_submit():
         product = db.session.get(Product, id)
@@ -122,3 +132,42 @@ def edit_stock(id):
               f' на {product.stock}.')
         return redirect(url_for('main.product', id=id))
     return redirect(url_for('main.product', id=id))
+
+
+@bp.route('/admin/edit_product/<id>', methods=('GET', 'POST'))
+@login_required
+@admin_only
+def edit_product(id):
+    """ Отображение редактирования товара."""
+    form = EditProductForm()
+    # Формирование списка категорий
+    categories = db.session.scalars(sa.select(Category))
+    form.categories.choices = [category.name for category in categories]
+    if form.validate_on_submit():
+        # Изменение товара в соответствии с данными из формы
+        product = db.session.get(Product, int(id))
+        product.name = form.name.data
+        product.price = form.price.data
+        product.brand = form.brand.data
+        product.description = form.description.data
+        if product is None:  # Товар не найден
+            return redirect(url_for('main.product', id=id))
+        categories = db.session.scalars(
+            sa.select(Category).where(
+                Category.name.in_(form.categories.data)
+            )
+        ).all()
+        product.categories = categories
+        db.session.commit()
+        flash('Редактирование завершено успешно.')
+        return redirect(url_for('main.product', id=id))
+    # Получение первоначальных данных для формы
+    product = db.session.get(Product, int(id))
+    if product is None:  # Товар не найден
+        return redirect(url_for('main.product', id=id))
+    form.name.data = product.name
+    form.price.data = product.price
+    form.brand.data = product.brand
+    form.description.data = product.description
+    form.categories.data = [category.name for category in product.categories]
+    return render_template('admin/edit_product.html/', form=form)

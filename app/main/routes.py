@@ -28,7 +28,6 @@ def product(id):
     product = db.session.get(Product, int(id))
     if product is None:  # Продукт не найден
         abort(404)
-    categories_list = product.categories
     # Получение количества заданного продукта в корзине
     basket = current_user.get_basket()
     basket_item = db.session.scalar(sa.select(BasketProduct).where(
@@ -37,7 +36,7 @@ def product(id):
     ))
     amount = basket_item.amount if basket_item else 0
     return render_template('main/product.html', product=product,
-                           categories=categories_list, amount=amount,
+                           categories=product.categories, amount=amount,
                            form=form, edit_stock_form=edit_stock_form)
 
 
