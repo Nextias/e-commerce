@@ -1,3 +1,5 @@
+import re
+
 import sqlalchemy as sa
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, StringField, SubmitField
@@ -28,3 +30,17 @@ class RegistrationForm(FlaskForm):
             sa.select(User).where(User.email == email.data))
         if user is not None:
             raise ValidationError('Данный почтовый адрес уже занят.')
+
+    def validate_password(self, password):
+        if len(password.data) < 10:
+            raise ValidationError(
+                'Длина пароля должна быть не менее 10'
+                ' символов, включая буквы в обоих регистрах и цифры.')
+        elif not re.search(r"[A-Z]", password.data):
+            raise ValidationError('Пароль должен содержать символы в'
+                                  ' верхнем регистре.')
+        if not re.search(r"[a-z]", password.data):
+            raise ValidationError('Пароль должен содержать символы в'
+                                  ' нижнем регистре.')
+        if not re.search(r"[0-9]", password.data):
+            raise ValidationError('Пароль должен содержать цифры.')

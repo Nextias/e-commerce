@@ -11,7 +11,7 @@ class TestMainRoutes(unittest.TestCase):
     # Определения констант тестового пользователя
     USERNAME = 'user'
     EMAIL = 'user@example.com'
-    PASSWORD = 'newpassword'
+    PASSWORD = 'Newpassword1'
 
     def setUp(self):
         # Создание объекта приложения

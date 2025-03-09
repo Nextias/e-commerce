@@ -61,7 +61,7 @@ class TestAuthRoutes(unittest.TestCase):
     def test_register_with_valid_data(self):
         """Проверка регистрации с валидными данными."""
         response = self.register_user(
-            'newuser', 'newuser@example.com', 'newpassword')
+            'newuser', 'newuser@example.com', 'newPassword123')
         self.assertEqual(response.status_code, 200)
         # Предполагается, что произойдёт перенаправление на авторизацию
         self.assertIn('remember_me', response.data.decode('utf-8'))
@@ -71,10 +71,11 @@ class TestAuthRoutes(unittest.TestCase):
 
     def test_register_with_existing_username(self):
         """Проверка повторной регистрации по занятому username."""
-        self.register_user('existinguser', 'existing@example.com', 'password')
+        self.register_user(
+            'existinguser', 'existing@example.com', 'Password123')
         # Попытка повторной регистрации с таким же username
         response = self.register_user(
-            'existinguser', 'another@example.com', 'password')
+            'existinguser', 'another@example.com', 'Password123')
         self.assertEqual(response.status_code, 200)
         # Предполагается, что форма не пройдёт валидацию
         self.assertIn('<div class="invalid-feedback">',
@@ -82,10 +83,11 @@ class TestAuthRoutes(unittest.TestCase):
 
     def test_register_with_existing_email(self):
         """Проверка повторной регистрации по занятому email."""
-        self.register_user('existinguser', 'existing@example.com', 'password')
+        self.register_user(
+            'existinguser', 'existing@example.com', 'Password123')
         # Попытка повторной регистрации с таким же email
         response = self.register_user(
-            'anotheruse', 'existing@example.com', 'password')
+            'anotheruse', 'existing@example.com', 'Password123')
         self.assertEqual(response.status_code, 200)
         # Предполагается, что форма не пройдёт валидацию
         self.assertIn('<div class="invalid-feedback">',
@@ -93,27 +95,27 @@ class TestAuthRoutes(unittest.TestCase):
 
     def test_login_with_valid_credentials(self):
         """Проверка авторизации с валидными данными."""
-        self.register_user('testuser', 'test@example.com', 'password')
+        self.register_user('testuser', 'test@example.com', 'Password123')
 
         # Проверка авторизации
-        response = self.login_user('testuser', 'password')
+        response = self.login_user('testuser', 'Password123')
         self.assertEqual(response.status_code, 200)
         # Предполагается, что /logout есть на странице
         self.assertIn('/logout', response.data.decode('utf-8'))
 
     def test_login_with_invalid_credentials(self):
         """Проверка авторизации с невалидными данными."""
-        response = self.login_user('wronguser', 'wrongpassword')
+        response = self.login_user('wronguser', 'wrongPassword123')
         self.assertEqual(response.status_code, 200)
         # Предполагается, что /logout нет на странице
         self.assertNotIn('/logout', response.data.decode('utf-8'))
 
     def test_login_with_remember_me(self):
         """Проверка авторизации с remember_me=True."""
-        self.register_user('testuser', 'test@example.com', 'password')
+        self.register_user('testuser', 'test@example.com', 'Password123')
 
         # Авторизация с remember_me
-        response = self.login_user('testuser', 'password', remember_me=True)
+        response = self.login_user('testuser', 'Password123', remember_me=True)
         self.assertEqual(response.status_code, 200)
         # Предполагается, что /logout есть на странице
         self.assertIn('/logout', response.data.decode('utf-8'))
@@ -121,8 +123,8 @@ class TestAuthRoutes(unittest.TestCase):
     def test_logout(self):
         """Провека выхода пользователя через /logout"""
         # Регистрация а аутентификация пользователя
-        self.register_user('testuser', 'test@example.com', 'password')
-        self.login_user('testuser', 'password')
+        self.register_user('testuser', 'test@example.com', 'Password123')
+        self.login_user('testuser', 'Password123')
         # Выход через logout
         response = self.client.get(
             url_for('auth.logout'), follow_redirects=True)
