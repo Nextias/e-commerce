@@ -10,9 +10,9 @@ from werkzeug.utils import secure_filename
 
 from app import db
 from app.admin import bp
-from app.forms import (CreateProductForm, EditProductForm, EditStockForm,
-                       UploadForm)
-from app.models import Order, Product, Role, User, Category
+from app.forms import (CreateCategoryForm, CreateProductForm, EditCategoryForm,
+                       EditProductForm, EditStockForm, UploadForm)
+from app.models import Category, Order, Product, Role, User
 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
@@ -278,3 +278,64 @@ def unban_user(id):
     db.session.commit()
     flash(f'Пользователь {user.username} был успешно разблокирован')
     return redirect(url_for('admin.users'))
+
+
+@bp.route('/admin/categories', methods=('GET', 'POST'))
+@login_required
+@admin_only
+def categories():
+    """Отображение категорий в панели администратора."""
+    categories = db.session.scalars(sa.select(Category))
+    return render_template('admin/categories.html', categories=categories)
+
+
+@bp.route('/admin/create_category', methods=('GET', 'POST'))
+@login_required
+@admin_only
+def create_category():
+    """ Отображение страницы создания категории. """
+    form = CreateCategoryForm()
+    if form.validate_on_submit():
+        # Добавление категории в базу
+        category = Category(name=form.name.data)
+        db.session.add(category)
+        db.session.commit()
+        flash('Категория успешно добавлена')
+        return redirect(url_for('admin.categories'))
+    return render_template('admin/create_category.html', form=form)
+
+
+@bp.route('/admin/edit_category/<id>', methods=('GET', 'POST'))
+@login_required
+@admin_only
+def edit_category(id):
+    """ Отображение редактирования категории."""
+    form = EditCategoryForm()
+    # Формирование списка категорий
+    if form.validate_on_submit():
+        # Изменение товара в соответствии с данными из формы
+        category = db.session.get(Category, int(id))
+        category.name = form.name.data
+        db.session.commit()
+        flash('Редактирование завершено успешно.')
+        return redirect(url_for('admin.categories'))
+    # Получение первоначальных данных для формы
+    category = db.session.get(Category, int(id))
+    if category is None:  # Категория не найдена
+        return redirect(url_for('admin.categories'))
+    form.name.data = category.name
+    return render_template('admin/edit_category.html/', form=form)
+
+
+@bp.route('/admin/delete_category/<id>', methods=('GET', 'POST'))
+@login_required
+@admin_only
+def delete_category(id):
+    """Удаление категории по id."""
+    category = db.session.get(Category, int(id))
+    if category is None:
+        return redirect(url_for('admin.categories'))
+    db.session.delete(category)
+    db.session.commit()
+    flash('Удаление успешно завершено.')
+    return redirect(url_for('admin.categories'))

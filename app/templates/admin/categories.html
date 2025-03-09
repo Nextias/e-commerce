@@ -1,0 +1,54 @@
+{% extends "admin/base.html" %}
+    {% block content %}   
+        <!-- Page Content -->
+        <h1>Управление категориями</h1>
+
+        <style>
+            .category-table {
+                width: 100%;
+                bcategory-collapse: collapse; /* Ensures bcategories are merged */
+            }
+            .category-table th, .category-table td {
+                bcategory: 1px solid #ddd; /* Adds a light gray bcategory */
+                padding: 8px; /* Adds spacing inside cells */
+                text-align: left; /* Aligns text to the left */
+            }
+            .category-table th {
+                background-color: #f2f2f2; /* Adds a light gray background to headers */
+            }
+            .category-table tr:nth-child(even) {
+                background-color: #f9f9f9; /* Adds a zebra-striping effect */
+            }
+            .category-table tr:hover {
+                background-color: #eaeaea; /* Adds a hover effect */
+            }
+        </style>
+        
+        <table class="category-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                <tr>
+                    <td>{{category.id}}</td>
+                    <td>{{category.name}}</td>
+                    <td>
+                        <a href="{{url_for('admin.edit_category', id=category.id)}}">Редактировать</a>/<a href="{{url_for('admin.delete_category', id=category.id)}}" onclick="return confirm('Вы уверены?')">Удалить</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="d-flex justify-content-center mt-3">
+            <div class="w-30">
+                <a href="{{ url_for('admin.create_category') }}" class="btn btn-primary mb-3">
+                    Добавить категорию
+                </a>
+            </div>
+        </div>
+  {% endblock %}

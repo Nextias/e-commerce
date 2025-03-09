@@ -3,7 +3,7 @@ import unittest
 from flask import url_for
 
 from app import create_app, db
-from app.models import OrderStatus, Role, User, Product, Order
+from app.models import OrderStatus, Role, User, Product, Order, Category
 from config import TestConfig
 
 
@@ -85,6 +85,7 @@ class TestAdminRoutes(unittest.TestCase):
         )
 
     def edit_product(self, id, name, description, price, brand):
+        """Редактировать товар."""
         return self.client.post(
             url_for('admin.edit_product', id=id),
             data=dict(name=name, description=description, price=price,
@@ -93,6 +94,7 @@ class TestAdminRoutes(unittest.TestCase):
         )
 
     def delete_product(self, id):
+        """Удалить товар."""
         return self.client.post(
             url_for('admin.delete_product', id=id),
             follow_redirects=True
@@ -130,6 +132,29 @@ class TestAdminRoutes(unittest.TestCase):
         """Разблокировать пользователя."""
         return self.client.post(
             url_for('admin.unban_user', id=id)
+        )
+
+    def create_category(self, name):
+        """Создать категорию."""
+        return self.client.post(
+            url_for('admin.create_category'),
+            data=dict(name=name),
+            follow_redirects=True
+        )
+
+    def edit_category(self, id, name):
+        """Редактировать категорию."""
+        return self.client.post(
+            url_for('admin.edit_category', id=id),
+            data=dict(name=name),
+            follow_redirects=True
+        )
+
+    def delete_category(self, id):
+        """Удалить категорию."""
+        return self.client.post(
+            url_for('admin.delete_category', id=id),
+            follow_redirects=True
         )
 
     def test_admin_page_loads(self):
@@ -303,6 +328,34 @@ class TestAdminRoutes(unittest.TestCase):
         self.unban_user(user.id)
         self.assertFalse(user.banned)
         self.assertTrue(user.is_active)
+
+    def test_create_category(self):
+        """Проверка добавления новой категории."""
+        response = self.create_category('category111')
+        self.assertEqual(response.status_code, 200)
+        # Предполагается наличие новой категории в управлении категориями
+        self.assertIn('Управление категориями', response.data.decode('utf-8'))
+        self.assertIn('category111', response.data.decode('utf-8'))
+
+    def test_delete_category(self):
+        """Проверка удаления категории."""
+        self.create_category('category111')
+        category = Category.query.first()
+        response = self.delete_category(category.id)
+        self.assertEqual(response.status_code, 200)
+        # Предполагается, что в базе нет категорий после удалению
+        category = Category.query.first()
+        self.assertTrue(category is None)
+
+    def test_edit_category(self):
+        """Проверка редактирования категории."""
+        response = self.create_category('category')
+        category = Category.query.first()
+        response = self.edit_category(category.id, 'new_category')
+        self.assertEqual(response.status_code, 200)
+        # Предполагается наличие обновлённой категории
+        self.assertIn('Управление категориями', response.data.decode('utf-8'))
+        self.assertIn('new_category', response.data.decode('utf-8'))
 
 
 if __name__ == '__main__':
