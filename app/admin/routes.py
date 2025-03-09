@@ -233,3 +233,48 @@ def finish_order(order_number):
     db.session.commit()
     flash('Заказ был успешно завершён')
     return redirect(url_for('admin.orders'))
+
+
+@bp.route('/admin/users', methods=('GET', 'POST'))
+@login_required
+@admin_only
+def users():
+    """Отображение пользователей в панели администратора. """
+    users = db.session.scalars(sa.select(User))
+    return render_template('admin/users.html', users=users)
+
+
+@bp.route('/admin/ban_user/<id>', methods=('GET', 'POST'))
+@login_required
+@admin_only
+def ban_user(id):
+    """Блокировать пользователя по id."""
+    user = db.session.get(User, int(id))
+    if user is None:  # Пользователь не найден
+        flash('Пользователь не найден')
+        return redirect(url_for('admin.users'))
+    if user.banned:  # Пользователь уже в бане
+        flash('Пользователь был ранее заблокирован')
+        return redirect(url_for('admin.users'))
+    user.banned = True
+    db.session.commit()
+    flash(f'Пользователь {user.username} был успешно заблокирован')
+    return redirect(url_for('admin.users'))
+
+
+@bp.route('/admin/unban_user/<id>', methods=('GET', 'POST'))
+@login_required
+@admin_only
+def unban_user(id):
+    """Разблокировать пользователя по id."""
+    user = db.session.get(User, int(id))
+    if user is None:  # Пользователь не найден
+        flash('Пользователь не найден')
+        return redirect(url_for('admin.users'))
+    if not user.banned:  # Пользователь не в бане
+        flash('Пользователь не заблокирован')
+        return redirect(url_for('admin.users'))
+    user.banned = False
+    db.session.commit()
+    flash(f'Пользователь {user.username} был успешно разблокирован')
+    return redirect(url_for('admin.users'))

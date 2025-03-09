@@ -120,6 +120,18 @@ class TestAdminRoutes(unittest.TestCase):
             follow_redirects=True
         )
 
+    def ban_user(self, id):
+        """Блокировать пользователя."""
+        return self.client.post(
+            url_for('admin.ban_user', id=id)
+        )
+
+    def unban_user(self, id):
+        """Разблокировать пользователя."""
+        return self.client.post(
+            url_for('admin.unban_user', id=id)
+        )
+
     def test_admin_page_loads(self):
         """Проверка загрузки главной страницы Панели Администратора."""
         response = self.client.get(url_for('admin.admin'))
@@ -183,9 +195,16 @@ class TestAdminRoutes(unittest.TestCase):
 
     def test_users_loads(self):
         """Проверка загрузки страницы пользователей."""
-
-    def test_edit_user_loads(self):
-        """Проверка загрузки страницы редактирования пользователя."""
+        response = self.client.get(url_for('admin.users'))
+        self.assertEqual(response.status_code, 200)
+        # Предполагается наличие полей формы
+        self.assertIn('users-table', response.data.decode('utf-8'))
+        self.assertIn('ID', response.data.decode('utf-8'))
+        self.assertIn('Имя пользователя', response.data.decode('utf-8'))
+        self.assertIn('Последняя активность', response.data.decode('utf-8'))
+        self.assertIn('Email', response.data.decode('utf-8'))
+        self.assertIn('Заблокирован', response.data.decode('utf-8'))
+        self.assertIn('Действия', response.data.decode('utf-8'))
 
     def test_create_product(self):
         """Проверка добавления нового продукта."""
@@ -266,14 +285,24 @@ class TestAdminRoutes(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(order.status.name, 'Завершён')
 
-    def test_edit_user(self):
-        """Проверка редактирования пользователя."""
-
-    def test_ban_user(self):
-        """Проверка блокировки пользователя."""
-
-    def test_delete_user(self):
-        """Проверка удаления пользователя."""
+    def test_banned(self):
+        """Проверка блокировки/разблокировки пользователя."""
+        # Выход из админа и регистрация нового пользователя
+        self.client.get(
+            url_for('auth.logout'), follow_redirects=True)
+        self.register_user(
+            'newuser', 'newuser@example.com', 'newPassword123')
+        self.login_user(self.USERNAME, self.PASSWORD)
+        # Проверка блокировки
+        user = User.query.filter_by(username='newuser').first()
+        self.assertFalse(user.banned)
+        self.ban_user(user.id)
+        self.assertTrue(user.banned)
+        self.assertFalse(user.is_active)
+        # Проверка разблокировки
+        self.unban_user(user.id)
+        self.assertFalse(user.banned)
+        self.assertTrue(user.is_active)
 
 
 if __name__ == '__main__':

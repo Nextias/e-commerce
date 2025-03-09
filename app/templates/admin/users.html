@@ -1,0 +1,64 @@
+{% extends "admin/base.html" %}
+    {% block content %}   
+        <!-- Page Content -->
+        <h1>Управление пользователями</h1>
+
+        <style>
+            .users-table {
+                width: 100%;
+                border-collapse: collapse; /* Ensures borders are merged */
+            }
+            .users-table th, .users-table td {
+                border: 1px solid #ddd; /* Adds a light gray border */
+                padding: 8px; /* Adds spacing inside cells */
+                text-align: left; /* Aligns text to the left */
+            }
+            .users-table th {
+                background-color: #f2f2f2; /* Adds a light gray background to headers */
+            }
+            .users-table tr:nth-child(even) {
+                background-color: #f9f9f9; /* Adds a zebra-striping effect */
+            }
+            .users-table tr:hover {
+                background-color: #eaeaea; /* Adds a hover effect */
+            }
+        </style>
+        
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Имя пользователя</th>
+                    <th>Дата регистрации</th>
+                    <th>Последняя активность</th>
+                    <th>Email</th>
+                    <th>Заблокирован</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.created_at }}</td>
+                    <td>{{ user.last_seen }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.banned }}</td>
+                    <td>
+                    {% if current_user.id != user.id %}
+                        {% if not user.banned %}
+                        <a href="{{url_for('admin.ban_user', id=user.id)}}">Заблокировать</a>
+                        {% else %}
+                        <a href="{{url_for('admin.unban_user', id=user.id)}}">Разблокировать</a>                      
+                        {% endif %}
+                    {% else %}
+                    Это вы
+                    {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+  {% endblock %}
+
