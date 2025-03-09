@@ -43,10 +43,6 @@ class User(UserMixin, db.Model):  # type: ignore[name-defined]
     """ Модель БД таблица user. """
     __tablename__ = 'user'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.set_role()
-
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     username: so.Mapped[str] = so.mapped_column(sa.String(64), index=True,
                                                 unique=True)
@@ -58,6 +54,7 @@ class User(UserMixin, db.Model):  # type: ignore[name-defined]
     last_name: so.Mapped[Optional[str]] = so.mapped_column(sa.String(30))
     phone_number: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20))
     address: so.Mapped[Optional[str]] = so.mapped_column(sa.String(60))
+    banned: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=False)
     created_at: so.Mapped[Optional[datetime]] = so.mapped_column(
         default=lambda: datetime.now(timezone.utc))
     last_seen: so.Mapped[Optional[datetime]] = so.mapped_column(
@@ -70,6 +67,10 @@ class User(UserMixin, db.Model):  # type: ignore[name-defined]
     user_baskets: so.Mapped[List['Basket']] = so.relationship(
         back_populates='user', order_by='Basket.created_at'
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.set_role()
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -115,6 +116,11 @@ class User(UserMixin, db.Model):  # type: ignore[name-defined]
         else:
             basket = active_baskets[-1]
         return basket
+
+    @property
+    def is_active(self):
+        """Проверка доступа пользователя в систему."""
+        return not self.banned
 
 
 class Product(db.Model):  # type: ignore[name-defined]
@@ -229,10 +235,6 @@ class Order(db.Model):  # type: ignore[name-defined]
     """ Модель БД таблица order. """
     __tablename__ = 'order'
 
-    def __init__(self, *args, status_name: str = 'Создан', **kwargs):
-        super().__init__(*args, **kwargs)
-        self.set_status(status_name)
-
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     order_number: so.Mapped[int] = so.mapped_column(
         sa.String(40), unique=True,
@@ -253,6 +255,10 @@ class Order(db.Model):  # type: ignore[name-defined]
     customer: so.Mapped[User] = so.relationship(back_populates='user_orders')
     basket: so.Mapped[Optional['Basket']] = so.relationship(
         back_populates='order')
+
+    def __init__(self, *args, status_name: str = 'Создан', **kwargs):
+        super().__init__(*args, **kwargs)
+        self.set_status(status_name)
 
     def set_status(self, status_name: str = 'Создан') -> None:
         """ Назначение роли.
