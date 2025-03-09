@@ -90,10 +90,11 @@ class User(UserMixin, db.Model):  # type: ignore[name-defined]
         >>> user.set_role('admin')
         """
         role = db.session.scalar(sa.select(Role).where(Role.name == role_name))
-        if role:
-            self.role = role
-        else:
-            raise ValueError(f"Роль '{role_name}' не найдена")
+        if role is None:  # В базе отсутствует роль, необходимая для работы
+            role = Role(name=role_name)
+            db.session.add(role)
+            db.session.commit()
+        self.role = role
 
     def get_basket(self) -> 'Basket':
         """ Получение актуальной корзины покупателя, если таковой нету,
@@ -262,10 +263,11 @@ class Order(db.Model):  # type: ignore[name-defined]
         """
         status = db.session.scalar(sa.select(OrderStatus).where(
             OrderStatus.name == status_name))
-        if status:
-            self.status = status
-        else:
-            raise ValueError(f"Статус '{status_name}' не найден")
+        if status is None:  # В базе отсутствует статус, необходимый для работы
+            status = OrderStatus(name=status_name)
+            db.session.add(status)
+            db.session.commit()
+        self.status = status
 
 
 class OrderStatus(db.Model):  # type: ignore[name-defined]
