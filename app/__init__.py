@@ -21,8 +21,9 @@ def create_app(config_class=Config):
     # Регистрация blueprint
     from app.main import bp
     app.register_blueprint(bp)
-    from app.auth import bp
+    from app.auth import bp, user_activity
     app.register_blueprint(bp)
+    user_activity = app.after_request(user_activity)
     from app.admin import bp
     app.register_blueprint(bp)
     # Связка экземпляров с приложением

@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from urllib.parse import urlsplit
 
 import sqlalchemy as sa
@@ -8,6 +9,14 @@ from app import db
 from app.auth import bp
 from app.forms import LoginForm, RegistrationForm
 from app.models import User
+
+
+def user_activity(response):
+    """Обновление активности пользователя после запроса."""
+    if current_user.is_authenticated:
+        current_user.last_seen = datetime.now(timezone.utc)
+        db.session.commit()
+    return response
 
 
 @bp.route('/login', methods=('GET', 'POST'))
