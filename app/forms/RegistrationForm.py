@@ -3,16 +3,17 @@ import re
 import sqlalchemy as sa
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, StringField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
-
+from wtforms.validators import (DataRequired, Email, EqualTo, ValidationError,
+                                Length)
 from app import db
 from app.models import User  # type: ignore[name-defined]
 
 
 class RegistrationForm(FlaskForm):
-    username = StringField('Имя пользователя', validators=[DataRequired()])
-    email = StringField('Адрес электронной почты', validators=[DataRequired(),
-                                                               Email()])
+    username = StringField('Имя пользователя', validators=[DataRequired(),
+                                                           Length(max=64)])
+    email = StringField('Адрес электронной почты',
+                        validators=[DataRequired(), Email(), Length(max=120)])
     password = PasswordField('Пароль', validators=[DataRequired()])
     password2 = PasswordField(
         'Повторить пароль', validators=[DataRequired(),

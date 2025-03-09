@@ -9,4 +9,4 @@ class EditStockForm(FlaskForm):
 
     def validate_amount(self, field):
         if field.data < 0:
-            raise ValidationError('Количество не может быть меньше')
+            raise ValidationError('Количество не может быть меньше нуля')

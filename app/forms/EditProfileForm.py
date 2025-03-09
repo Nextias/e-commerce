@@ -1,15 +1,20 @@
 import phonenumbers
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired, ValidationError
+from wtforms.validators import DataRequired, Length, ValidationError
 
 
 class EditProfileForm(FlaskForm):
-    first_name = StringField('Имя', validators=[DataRequired()])
-    last_name = StringField('Фамилия', validators=[DataRequired()])
-    phone_number = StringField('Номер телефона')
-    about_me = StringField('Обо мне')
-    address = StringField('Адрес')
+    first_name = StringField('Имя', validators=[DataRequired(),
+                                                Length(max=30)])
+    last_name = StringField('Фамилия', validators=[DataRequired(),
+                                                   Length(max=30)])
+    phone_number = StringField('Номер телефона', validators=[DataRequired(),
+                                                             Length(max=20)])
+    about_me = StringField('Обо мне', validators=[DataRequired(),
+                                                  Length(max=140)])
+    address = StringField('Адрес', validators=[DataRequired(),
+                                               Length(max=60)])
     submit = SubmitField('Подтвердить')
 
     def validate_phone_number(form, field):

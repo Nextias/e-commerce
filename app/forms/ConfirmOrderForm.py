@@ -3,4 +3,4 @@ from wtforms import SubmitField
 
 
 class ConfirmOrderForm(FlaskForm):
-    submit = SubmitField('Подтвердить заказ.')
+    submit = SubmitField('Подтвердить заказ')
