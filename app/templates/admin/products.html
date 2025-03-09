@@ -45,8 +45,7 @@
                     <td>{{ product.price }}</td>
                     <td>{{ product.stock }}</td>
                     <td>
-                        <a href="{{url_for('admin.edit_product', id=product.id)}}">Редактировать</a>/
-                        <a href="{{url_for('admin.delete_product', id=product.id)}}" onclick="return confirm('Вы уверены?')">Удалить</a>
+                        <a href="{{url_for('admin.edit_product', id=product.id)}}">Редактировать</a>/<a href="{{url_for('admin.delete_product', id=product.id)}}" onclick="return confirm('Вы уверены?')">Удалить</a>
                     </td>
                 </tr>
                 {% endfor %}

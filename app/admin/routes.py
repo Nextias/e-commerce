@@ -193,4 +193,43 @@ def delete_product(id):
 def orders():
     """Отображение заказов в панели администратора. """
     orders = db.session.scalars(sa.select(Order))
-    return render_template('admin/orders.html', orders=orders)
+    orders_dict = {order: order.customer for order in orders}
+    return render_template('admin/orders.html', orders=orders_dict)
+
+
+@bp.route('/admin/confirm_order/<order_number>/', methods=('GET', 'POST'))
+@login_required
+@admin_only
+def confirm_order(order_number):
+    """Подтверждение заказа."""
+    order = db.session.scalar(sa.select(Order).where(
+        Order.order_number == order_number))
+    if order is None:  # Заказ не найден
+        abort(404)
+    if order.status.name == 'Подтверждён':  # Заказ уже был подтверждён
+        flash('Заказ уже был ранее подтверждён')
+        return redirect(url_for('admin.orders'))
+    # Смена статуса заказа
+    order.set_status('Подтверждён')
+    db.session.commit()
+    flash('Заказ был успешно подтверждён')
+    return redirect(url_for('admin.orders'))
+
+
+@bp.route('/admin/finish_order/<order_number>/', methods=('GET', 'POST'))
+@login_required
+@admin_only
+def finish_order(order_number):
+    """Завершение заказа."""
+    order = db.session.scalar(sa.select(Order).where(
+        Order.order_number == order_number))
+    if order is None:  # Заказ не найден
+        abort(404)
+    if order.status.name != 'Подтверждён':  # Заказ не был подтверждён
+        flash('Можно завершить лишь подтверждённый заказ')
+        return redirect(url_for('admin.orders'))
+    # Смена статуса заказа
+    order.set_status('Завершён')
+    db.session.commit()
+    flash('Заказ был успешно завершён')
+    return redirect(url_for('admin.orders'))

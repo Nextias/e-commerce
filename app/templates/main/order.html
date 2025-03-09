@@ -12,11 +12,27 @@
         <span id="total-amount">{{ total_amount }}</span>
     </h4>
 </div>
-{% if order.status != 'canceled' %}
+{% if order.status.name != 'Отменён' and  order.status.name != 'Завершён' %}
 <div class="d-flex justify-content-center mt-3">
     <div class="w-30">
-        {% set form_action = url_for('main.cancel_order', id=order.id) %}
-        {{ wtf.quick_form(form, action=form_action) }}
+        {% set cancel_form_action = url_for('main.cancel_order', order_number=order.order_number) %}
+        {{ wtf.quick_form(cancel_form, action=cancel_form_action) }}
+    </div>
+</div>
+{% endif %}
+{% if order.status.name != 'Подтверждён' and order.status.name != 'Завершён' and current_user.role.name == 'admin' %}
+<div class="d-flex justify-content-center mt-3">
+    <div class="w-30">
+        {% set confirm_form_action = url_for('admin.confirm_order', order_number=order.order_number) %}
+        {{ wtf.quick_form(confirm_form, action=confirm_form_action) }}
+    </div>
+</div>
+{% endif %}
+{% if order.status.name == 'Подтверждён' and current_user.role.name == 'admin' %}
+<div class="d-flex justify-content-center mt-3">
+    <div class="w-30">
+        {% set finish_form_action = url_for('admin.finish_order', order_number=order.order_number) %}
+        {{ wtf.quick_form(finish_form, action=finish_form_action) }}
     </div>
 </div>
 {% endif %}

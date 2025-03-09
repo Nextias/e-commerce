@@ -99,10 +99,10 @@ class TestMainRoutes(unittest.TestCase):
             follow_redirects=True
         )
 
-    def cancel_order(self, id):
+    def cancel_order(self, order_number):
         """Отменить заказ."""
         return self.client.post(
-            url_for('main.cancel_order', id=id),
+            url_for('main.cancel_order', order_number=order_number),
             follow_redirects=True
         )
 
@@ -198,10 +198,10 @@ class TestMainRoutes(unittest.TestCase):
         # Создание заказа
         self.add_product(self.product.id)
         self.submit_order('address')
-        retrievew_order = Order.query.first()
-        response = self.cancel_order(id=retrievew_order.id)
+        order = Order.query.first()
+        response = self.cancel_order(order_number=order.order_number)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(retrievew_order.status.name, 'Отменён')
+        self.assertEqual(order.status.name, 'Отменён')
 
     def test_change_amount(self):
         """Проверка добавления/удаления единицы товара в корзину."""

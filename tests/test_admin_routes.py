@@ -3,7 +3,7 @@ import unittest
 from flask import url_for
 
 from app import create_app, db
-from app.models import OrderStatus, Role, User, Product
+from app.models import OrderStatus, Role, User, Product, Order
 from config import TestConfig
 
 
@@ -70,11 +70,18 @@ class TestAdminRoutes(unittest.TestCase):
         )
 
     def create_product(self, name, description, price, brand, stock):
+        """Создать продукт."""
         return self.client.post(
             url_for('admin.create_product'),
             data=dict(name=name, description=description, price=price,
                       brand=brand, stock=stock),
             follow_redirects=True
+        )
+
+    def add_product(self, product_id):
+        """Добавить продукт в корзину пользователя."""
+        return self.client.post(
+            url_for('main.add_item', product_id=product_id)
         )
 
     def edit_product(self, id, name, description, price, brand):
@@ -88,6 +95,28 @@ class TestAdminRoutes(unittest.TestCase):
     def delete_product(self, id):
         return self.client.post(
             url_for('admin.delete_product', id=id),
+            follow_redirects=True
+        )
+
+    def submit_order(self, address):
+        """Создать заказ."""
+        return self.client.post(
+            url_for('main.submit_order'),
+            data=dict(address=address),
+            follow_redirects=True
+        )
+
+    def confirm_order(self, order_number):
+        """Подтвердить заказ."""
+        return self.client.post(
+            url_for('admin.confirm_order', order_number=order_number),
+            follow_redirects=True
+        )
+
+    def finish_order(self, order_number):
+        """Завершить заказ."""
+        return self.client.post(
+            url_for('admin.finish_order', order_number=order_number),
             follow_redirects=True
         )
 
@@ -127,6 +156,18 @@ class TestAdminRoutes(unittest.TestCase):
 
     def test_edit_product_loads(self):
         """Проверка загрузки страницы редактирования продуктов."""
+        response = self.create_product('product', 'description', 1000, 'brand',
+                                       20)
+        product = Product.query.first()
+        response = self.client.get(
+            url_for('admin.edit_product', id=product.id))
+        self.assertEqual(response.status_code, 200)
+        # Предполагается наличие полей формы
+        self.assertIn('name', response.data.decode('utf-8'))
+        self.assertIn('price', response.data.decode('utf-8'))
+        self.assertIn('categories', response.data.decode('utf-8'))
+        self.assertIn('brand', response.data.decode('utf-8'))
+        self.assertIn('Сохранить', response.data.decode('utf-8'))
 
     def test_orders_loads(self):
         """Проверка загрузки страницы заказов."""
@@ -200,12 +241,30 @@ class TestAdminRoutes(unittest.TestCase):
 
     def test_confirm_order(self):
         """Проверка подтверждения заказа."""
-
-    def test_cancel_order(self):
-        """Проверка отмены заказа."""
+        response = self.create_product('product', 'description', 1000, 'brand',
+                                       20)
+        product = Product.query.first()
+        self.add_product(product.id)
+        self.submit_order('address')
+        order = Order.query.first()
+        self.assertEqual(order.status.name, 'Создан')
+        response = self.confirm_order(order_number=order.order_number)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(order.status.name, 'Подтверждён')
 
     def test_finish_order(self):
         """Проверка завершения заказа."""
+        response = self.create_product('product', 'description', 1000, 'brand',
+                                       20)
+        product = Product.query.first()
+        self.add_product(product.id)
+        self.submit_order('address')
+        order = Order.query.first()
+        self.assertEqual(order.status.name, 'Создан')
+        self.confirm_order(order_number=order.order_number)
+        response = self.finish_order(order_number=order.order_number)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(order.status.name, 'Завершён')
 
     def test_edit_user(self):
         """Проверка редактирования пользователя."""

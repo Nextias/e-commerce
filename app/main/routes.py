@@ -5,7 +5,8 @@ from flask_login import current_user, login_required
 
 from app import db
 from app.forms import (CancelOrderForm, CheckoutForm, EditProfileForm,
-                       EditStockForm, SubmitOrderForm, UploadForm)
+                       EditStockForm, SubmitOrderForm, UploadForm,
+                       ConfirmOrderForm, FinishOrderForm)
 from app.main import bp
 from app.models import Basket, BasketProduct, Order, Product
 
@@ -86,10 +87,13 @@ def order(order_number):
     basket = db.session.get(Basket, order.basket_id)
     basket_items = basket.get_basket_products()
     total_amount = basket.get_total_amount(basket_items)
-    form = CancelOrderForm()
+    cancel_form = CancelOrderForm()
+    confirm_form = ConfirmOrderForm()
+    finish_form = FinishOrderForm()
     return render_template('main/order.html', order=order,
                            products=basket_items, total_amount=total_amount,
-                           form=form)
+                           cancel_form=cancel_form, confirm_form=confirm_form,
+                           finish_form=finish_form)
 
 
 @bp.route('/explore/', methods=('GET', 'POST'))
@@ -239,15 +243,16 @@ def submit_order():
 
 
 @login_required
-@bp.route('/cancel_order/<id>', methods=('GET', 'POST'))
-def cancel_order(id):
+@bp.route('/cancel_order/<order_number>', methods=('GET', 'POST'))
+def cancel_order(order_number):
     """ Отмена заказа. """
     form = CancelOrderForm()
     if not form.validate_on_submit():
         flash('Ошибка валидации')
         return redirect(url_for('main.index'))
-    order = db.session.get(Order, int(id))
-    if not order:  # Заказ не найден
+    order = db.session.scalar(sa.select(Order).where(
+        Order.order_number == order_number))
+    if order is None:  # Заказ не найден
         abort(404)
     # Пользователь не владелец заказа и не админ
     elif (current_user.role.name != 'admin'

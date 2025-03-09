@@ -1,7 +1,7 @@
 {% extends "admin/base.html" %}
     {% block content %}   
         <!-- Page Content -->
-        <h1>Управление товарами</h1>
+        <h1>Управление заказами</h1>
 
         {% if orders %}
         <style>
@@ -32,6 +32,7 @@
                     <th>Номер заказа</th>
                     <th>Сумма</th>
                     <th>Дата доставки</th>
+                    <th>Пользователь</th>
                     <th>Статус</th>
                 </tr>
             </thead>
@@ -42,6 +43,7 @@
                     <td>{{order.order_number}}</td>
                     <td>{{order.total_amount}}</td>
                     <td>{{order.shipment_date}}</td>
+                    <td>{{orders[order].username}}</td>
                     <td>{{order.status}}</td>
                 </tr>
                 {% endfor %}
