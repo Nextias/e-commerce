@@ -19,10 +19,10 @@ class Config:
     ADMINS = ['your-email@example.com']
     LANGUAGES = ['en', 'ru']
     UPLOAD_FOLDER = imagesdir
-    MS_TRANSLATOR_KEY = os.environ.get('MS_TRANSLATOR_KEY')
+    PAGE_LENGTH = 10
 
 
-class TestConfig:
+class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
     WTF_CSRF_ENABLED = False

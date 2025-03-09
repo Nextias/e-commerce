@@ -1,12 +1,12 @@
 import sqlalchemy as sa
-from flask import (abort, flash, jsonify, redirect, render_template, request,
-                   url_for)
+from flask import (abort, current_app, flash, jsonify, redirect,
+                   render_template, request, url_for)
 from flask_login import current_user, login_required
 
 from app import db
-from app.forms import (CancelOrderForm, CheckoutForm, EditProfileForm,
-                       EditStockForm, SubmitOrderForm, UploadForm,
-                       ConfirmOrderForm, FinishOrderForm)
+from app.forms import (CancelOrderForm, CheckoutForm, ConfirmOrderForm,
+                       EditProfileForm, EditStockForm, FinishOrderForm,
+                       SubmitOrderForm, UploadForm)
 from app.main import bp
 from app.models import Basket, BasketProduct, Order, Product
 
@@ -99,17 +99,38 @@ def order(order_number):
 @bp.route('/explore/', methods=('GET', 'POST'))
 def explore():
     """ Отображение главной страницы поиска товаров. """
+    page = request.args.get('page', 1, type=int)
     # Проверка наличия товаров в корзине
     if current_user.is_authenticated:
         basket = current_user.get_basket()
         basket_items = basket.get_basket_products()
     else:
         basket_items = {}
+    # Если был введён поисковой запрос, то фильтруется результат
+    query = sa.select(Product).order_by(Product.id.desc())
+    search_query = request.args.get('q', '').strip()
+    if search_query:
+        query = query.where(
+            sa.or_(
+                Product.name.ilike(f'%{search_query}%'),
+                Product.description.ilike(f'%{search_query}%')
+            )
+        )
     # Составление списка продуктов
-    products = dict.fromkeys(db.session.scalars(sa.select(Product)), 0)
-    products.update(basket_items)
+    products = db.paginate(query, page=page,
+                           per_page=current_app.config['PAGE_LENGTH'],
+                           error_out=False)
+    next_url = (url_for('main.explore', page=products.next_num, q=search_query)
+                if products.has_next else None)
+    prev_url = (url_for('main.explore', page=products.prev_num)
+                if products.has_prev else None)
+    products = dict.fromkeys(products, 0)
+    products.update({product: amount
+                     for product, amount in basket_items.items()
+                     if product in products})
     return render_template('main/explore.html', products=products,
-                           modify_amount=True)
+                           modify_amount=True, next_url=next_url,
+                           prev_url=prev_url, search_query=search_query)
 
 
 @login_required

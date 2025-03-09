@@ -1,5 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
 <h2> Поиск товаров </h2>
+<form action="{{ url_for('main.explore') }}" method="GET" class="form-inline my-2 my-lg-0">
+    <input type="text" name="q" class="form-control mr-sm-2" placeholder="Поиск товаров..." value="{{ search_query }}">
+    <button type="submit" class="btn btn-outline-success my-2 my-sm-0">Поиск</button>
+</form>
+<br>
 {% include "main/_products_basket.html" %}
+<nav aria-label="products navigation">
+    <ul class="pagination">
+        <li class="page-item{% if not prev_url %} disabled{% endif %}">
+            <a class="page-link" href="{{ prev_url }}">
+                <span aria-hidden="true">&larr;</span> Назад
+            </a>
+        </li>
+        <li class="page-item{% if not next_url %} disabled{% endif %}">
+            <a class="page-link" href="{{ next_url }}">
+                Дальше <span aria-hidden="true">&rarr;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
 {% endblock %}
