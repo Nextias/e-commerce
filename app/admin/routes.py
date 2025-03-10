@@ -84,7 +84,7 @@ def admin():
 @admin_only
 def products():
     """Отображение товаров в панели администратора."""
-    products = db.session.scalars(sa.select(Product))
+    products = db.session.scalars(sa.select(Product).order_by(Product.id.desc()))
     return render_template('admin/products.html', products=products)
 
 
@@ -95,7 +95,8 @@ def create_product():
     """ Отображение страницы создания товара. """
     form = CreateProductForm()
     # Формирование списка категорий
-    categories = db.session.scalars(sa.select(Category))
+    categories = db.session.scalars(sa.select(Category).order_by(
+        Category.id.desc()))
     form.categories.choices = [category.name for category in categories]
     if form.validate_on_submit():
         # Добавление продукта в базу
@@ -141,7 +142,8 @@ def edit_product(id):
     """ Отображение редактирования товара."""
     form = EditProductForm()
     # Формирование списка категорий
-    categories = db.session.scalars(sa.select(Category))
+    categories = db.session.scalars(sa.select(Category).order_by(
+        Category.name))
     form.categories.choices = [category.name for category in categories]
     if form.validate_on_submit():
         # Изменение товара в соответствии с данными из формы
@@ -192,7 +194,7 @@ def delete_product(id):
 @admin_only
 def orders():
     """Отображение заказов в панели администратора. """
-    orders = db.session.scalars(sa.select(Order))
+    orders = db.session.scalars(sa.select(Order).order_by(Order.id.desc()))
     orders_dict = {order: order.customer for order in orders}
     return render_template('admin/orders.html', orders=orders_dict)
 
@@ -240,7 +242,7 @@ def finish_order(order_number):
 @admin_only
 def users():
     """Отображение пользователей в панели администратора. """
-    users = db.session.scalars(sa.select(User))
+    users = db.session.scalars(sa.select(User).order_by(User.username))
     return render_template('admin/users.html', users=users)
 
 
@@ -285,7 +287,8 @@ def unban_user(id):
 @admin_only
 def categories():
     """Отображение категорий в панели администратора."""
-    categories = db.session.scalars(sa.select(Category))
+    categories = db.session.scalars(sa.select(Category).order_by(
+        Category.name))
     return render_template('admin/categories.html', categories=categories)
 
 

@@ -194,6 +194,7 @@ class Basket(db.Model):  # type: ignore[name-defined]
             sa.select(BasketProduct, Product)
             .join(Product, BasketProduct.product_id == Product.id)
             .where(BasketProduct.basket_id == self.id)
+            .order_by(Product.id.desc())
         ).all()
         for basket_product, product in basket_products:
             if self.active:  # Корзина изменяется только если активна
@@ -224,7 +225,7 @@ class Basket(db.Model):  # type: ignore[name-defined]
         return sum(product.price * amount
                    for product, amount in basket_items.items())
 
-    def get_shipment_date(self, address=''):
+    def get_shipment_date(self):
         """Расчёт даты доставки.
         В текущей версии дата рассчитывается как сегодняшний день + 7 дней
         """
