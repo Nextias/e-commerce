@@ -6,7 +6,7 @@ from flask_login import current_user, login_required
 from app import db
 from app.forms import (CancelOrderForm, CheckoutForm, ConfirmOrderForm,
                        EditProfileForm, EditStockForm, FinishOrderForm,
-                       SubmitOrderForm, UploadForm)
+                       SubmitOrderForm, UploadForm, ReviewForm)
 from app.main import bp
 from app.models import Basket, BasketProduct, Order, Product
 
@@ -23,9 +23,10 @@ def index():
 @bp.route('/product/<id>', methods=('GET', 'POST'))
 @login_required
 def product(id):
-    """ Отображение информации о товаре по id. """
+    """ Отображение информации о товаре по id."""
     form = UploadForm()
     edit_stock_form = EditStockForm()
+    review_form = ReviewForm()
     product = db.session.get(Product, int(id))
     if product is None:  # Продукт не найден
         abort(404)
@@ -38,7 +39,8 @@ def product(id):
     amount = basket_item.amount if basket_item else 0
     return render_template('main/product.html', product=product,
                            categories=product.categories, amount=amount,
-                           form=form, edit_stock_form=edit_stock_form)
+                           form=form, edit_stock_form=edit_stock_form,
+                           review_form=review_form)
 
 
 @bp.route('/profile', methods=('GET', 'POST'))

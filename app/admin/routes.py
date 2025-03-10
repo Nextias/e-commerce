@@ -84,7 +84,8 @@ def admin():
 @admin_only
 def products():
     """Отображение товаров в панели администратора."""
-    products = db.session.scalars(sa.select(Product).order_by(Product.id.desc()))
+    products = db.session.scalars(
+        sa.select(Product).order_by(Product.id.desc()))
     return render_template('admin/products.html', products=products)
 
 
