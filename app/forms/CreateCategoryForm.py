@@ -8,6 +8,7 @@ from app.models import Category  # type: ignore[name-defined]
 
 
 class CreateCategoryForm(FlaskForm):
+    """Форма создания категории."""
     name = StringField('Название', validators=[DataRequired(),
                                                Length(max=64)])
     submit = SubmitField('Добавить')

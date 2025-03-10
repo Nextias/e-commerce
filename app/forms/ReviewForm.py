@@ -4,6 +4,7 @@ from wtforms.validators import DataRequired, Length
 
 
 class ReviewForm(FlaskForm):
+    """Форма добавления отзыва."""
     review = TextAreaField('Отзыв', validators=[DataRequired(),
                                                 Length(max=140)])
     rating = RadioField(

@@ -10,6 +10,7 @@ from app.models import User  # type: ignore[name-defined]
 
 
 class RegistrationForm(FlaskForm):
+    """Форма регистрации."""
     username = StringField('Имя пользователя', validators=[DataRequired(),
                                                            Length(max=64)])
     email = StringField('Адрес электронной почты',

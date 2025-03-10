@@ -3,4 +3,5 @@ from wtforms import SubmitField
 
 
 class FinishOrderForm(FlaskForm):
+    """Форма завершения заказа."""
     submit = SubmitField('Завершить заказ')

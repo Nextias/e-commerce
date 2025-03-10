@@ -16,13 +16,13 @@
                 <p>Имя пользователя: {{ current_user.username}}</p>
                 <hr>
                 <p>Адрес электронной почты: {{ current_user.email }} </p>
-                <p>Имя: {{ current_user.first_name }} {{ current_user.last_name }}</p>
-                <p>Номер телефона: {{ current_user.phone_number}}</p>
-                <p>Адрес: {{ current_user.address}}</p>
+                <p>Имя: {% if current_user.first_name %} {{ current_user.first_name }}{% endif %} {% if current_user.last_name %}{{ current_user.last_name }}{% endif %}</p>
+                <p>Номер телефона:{% if current_user.phone_number %} {{ current_user.phone_number}} {% endif %}</p>
+                <p>Адрес:{% if current_user.address %} {{ current_user.address}} {% endif %}</p>
 
                 <hr>
                 <div class="profile-info">
-                    <p>{{ current_user.about_me }}</p>
+                    <p>{% if current_user.about_me %}{{ current_user.about_me }}{% endif %}</p>
                 </div>
             </div>
         </div>

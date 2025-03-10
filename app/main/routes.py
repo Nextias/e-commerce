@@ -15,7 +15,7 @@ from app.models import Basket, BasketProduct, Order, Product, Review
 @bp.route('/index', methods=('GET', 'POST'))
 @login_required
 def index():
-    """ Отображение стартовой страницы. """
+    """Отображение стартовой страницы."""
     orders = current_user.user_orders
     return render_template('main/index.html', orders=orders)
 
@@ -23,7 +23,7 @@ def index():
 @bp.route('/product/<id>', methods=('GET', 'POST'))
 @login_required
 def product(id):
-    """ Отображение информации о товаре по id."""
+    """Отображение информации о товаре по id."""
     product = db.session.get(Product, int(id))
     if product is None:  # Продукт не найден
         abort(404)
@@ -61,14 +61,14 @@ def product(id):
 @bp.route('/profile', methods=('GET', 'POST'))
 @login_required
 def profile():
-    """ Отображение страницы профиля. """
+    """Отображение страницы профиля."""
     return render_template('main/profile.html')
 
 
 @bp.route('/edit_profile/', methods=('GET', 'POST'))
 @login_required
 def edit_profile():
-    """ Отображение страницы редактирования профиля. """
+    """Отображение страницы редактирования профиля."""
     form = EditProfileForm()
     if form.validate_on_submit():
         # Изменение пользователя в соответствии с данными из формы
@@ -91,7 +91,7 @@ def edit_profile():
 @bp.route('/order/<order_number>/', methods=('GET', 'POST'))
 @login_required
 def order(order_number):
-    """ Отображение информации о заказе по order_number. """
+    """Отображение информации о заказе по order_number."""
     order = db.session.scalar(sa.select(Order).where(
         Order.order_number == order_number))
     if order is None:  # Заказ не найден
@@ -114,8 +114,9 @@ def order(order_number):
 
 
 @bp.route('/explore/', methods=('GET', 'POST'))
+@login_required
 def explore():
-    """ Отображение главной страницы поиска товаров. """
+    """Отображение главной страницы поиска товаров."""
     page = request.args.get('page', 1, type=int)
     # Проверка наличия товаров в корзине
     if current_user.is_authenticated:
@@ -150,10 +151,10 @@ def explore():
                            prev_url=prev_url, search_query=search_query)
 
 
-@login_required
 @bp.route('/basket/', methods=('GET', 'POST'))
+@login_required
 def basket():
-    """ Отображение корзины. """
+    """Отображение корзины."""
     # Получение информации об актуальной корзине покупателя
     basket = current_user.get_basket()
     basket_items = basket.get_basket_products()
@@ -167,7 +168,7 @@ def basket():
 @login_required
 @bp.route('/basket/add_product/<product_id>', methods=('GET', 'POST'))
 def add_item(product_id):
-    """ Добавление единицы продукта в корзину, с последующим возвращением
+    """Добавление единицы продукта в корзину, с последующим возвращением
     актуального количества товара и полной стоимости по корзине в формате json.
     Функция предназначена для AJAX вызова.
     """
@@ -195,10 +196,10 @@ def add_item(product_id):
     return jsonify(amount=basket_item.amount, total_amount=total_amount)
 
 
-@login_required
 @bp.route('/basket/remove_product/<product_id>', methods=('GET', 'POST'))
+@login_required
 def remove_item(product_id):
-    """ Удаление единицы продукта из корзины, с последующим возвращением
+    """Удаление единицы продукта из корзины, с последующим возвращением
     актуального количества товара и полной стоимости по корзине в формате json.
     Функция предназначена для AJAX вызова.
     """
@@ -225,10 +226,10 @@ def remove_item(product_id):
     return jsonify(amount=basket_item.amount, total_amount=total_amount)
 
 
-@login_required
 @bp.route('/checkout/', methods=('GET', 'POST'))
+@login_required
 def checkout():
-    """ Отображение страницы подтверждения заказа. """
+    """Отображение страницы подтверждения заказа."""
     form = CheckoutForm()
     if not form.validate_on_submit():  # Форма не прошла проверку
         flash('Ошибка валидации')
@@ -251,7 +252,7 @@ def checkout():
 @login_required
 @bp.route('/submit_order/', methods=('GET', 'POST'))
 def submit_order():
-    """ Формирование заказа. """
+    """Формирование заказа."""
     form = SubmitOrderForm()
     if not form.validate_on_submit():
         flash('Ошибка валидации')
@@ -283,7 +284,7 @@ def submit_order():
 @login_required
 @bp.route('/cancel_order/<order_number>', methods=('GET', 'POST'))
 def cancel_order(order_number):
-    """ Отмена заказа. """
+    """Отмена заказа."""
     form = CancelOrderForm()
     if not form.validate_on_submit():
         flash('Ошибка валидации')

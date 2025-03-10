@@ -21,7 +21,7 @@ def user_activity(response):
 
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
-    """ Отображение страницы логина. """
+    """ Отображение страницы логина."""
     if current_user.is_authenticated:  # Пользователь уже залогинен
         return redirect(url_for('main.index'))
     form = LoginForm()
@@ -43,7 +43,7 @@ def login():
 
 @bp.route('/register', methods=('GET', 'POST'))
 def register():
-    """ Отображение страницы регистрации пользователя. """
+    """ Отображение страницы регистрации пользователя."""
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
     form = RegistrationForm()
@@ -64,6 +64,6 @@ def register():
 @bp.route('/logout')
 @login_required
 def logout():
-    """ Выход из сессии пользователя. """
+    """Выход из сессии пользователя."""
     logout_user()
     return redirect(url_for('main.index'))

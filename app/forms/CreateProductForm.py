@@ -8,6 +8,7 @@ from app.models import Product  # type: ignore[name-defined]
 
 
 class CreateProductForm(FlaskForm):
+    """Форма добавления нового товара."""
     name = StringField('Название', validators=[DataRequired(),
                                                Length(max=64)])
     price = IntegerField('Стоимость', validators=[DataRequired()])

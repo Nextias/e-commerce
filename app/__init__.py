@@ -10,11 +10,11 @@ db = SQLAlchemy()
 migrate = Migrate()
 login = LoginManager()
 login.login_view = 'auth.login'
-login.login_message = 'Please log in to access this page.'
+login.login_message = 'Пожалуйста пройдите авторизацию.'
 
 
 def create_app(config_class=Config):
-    """ Создание и конфигурация объекта приложения. """
+    """Создание и конфигурация объекта приложения."""
     app = Flask(__name__, static_url_path='/static')
     app.config.from_object(config_class)
     app.config['SESSION_SQLALCHEMY'] = db

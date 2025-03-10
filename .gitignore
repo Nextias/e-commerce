@@ -39,5 +39,4 @@ venv
 app.db
 microblog.log*
 
-#Temporary
-.flaskenv
+.env

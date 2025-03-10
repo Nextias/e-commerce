@@ -18,19 +18,19 @@ ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 
 def admin_only(f):
-    """ Декоратор для проверки, что запрашивающий является админом. """
+    """ Декоратор для проверки, что запрашивающий является админом."""
     @wraps(f)
     def wrapper(*args, **kwargs):
         admin_role = db.session.scalar(
             sa.select(Role).where(Role.name == 'admin'))
         if not current_user.role_id == admin_role.id:
-            print(current_user.role)
             abort(403)
         return f(*args, **kwargs)
     return wrapper
 
 
-def allowed_file(filename):
+def allowed_file(filename: str) -> bool:
+    """Проверка расширения файла."""
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -38,7 +38,7 @@ def allowed_file(filename):
 @bp.route('/admin/upload/image/product/<id>', methods=('GET', 'POST'))
 @admin_only
 def upload_product_image(id):
-    """ Загрузка изображения продукта. """
+    """ Загрузка изображения продукта."""
     form = UploadForm()
     if not form.validate_on_submit():
         return redirect(url_for('main.product', id=id))
@@ -70,7 +70,7 @@ def upload_product_image(id):
 @login_required
 @admin_only
 def admin():
-    """ Отображение панели администратора. """
+    """ Отображение панели администратора."""
     users_amount = db.session.query(func.count(User.id)).scalar()
     products_amount = db.session.query(func.count(Product.id)).scalar()
     orders_amount = db.session.query(func.count(Order.id)).scalar()
@@ -93,7 +93,7 @@ def products():
 @login_required
 @admin_only
 def create_product():
-    """ Отображение страницы создания товара. """
+    """ Отображение страницы создания товара."""
     form = CreateProductForm()
     # Формирование списка категорий
     categories = db.session.scalars(sa.select(Category).order_by(
@@ -124,7 +124,7 @@ def create_product():
 @login_required
 @admin_only
 def edit_stock(id):
-    """ Отображение страницы редактирования продуктов в наличии. """
+    """ Отображение страницы редактирования продуктов в наличии."""
     form = EditStockForm()
     if form.validate_on_submit():
         product = db.session.get(Product, id)
@@ -180,7 +180,7 @@ def edit_product(id):
 @login_required
 @admin_only
 def delete_product(id):
-    """Удаление товара по id. """
+    """Удаление товара по id."""
     product = db.session.get(Product, int(id))
     if product is None:
         return redirect(url_for('admin.products'))
@@ -194,7 +194,7 @@ def delete_product(id):
 @login_required
 @admin_only
 def orders():
-    """Отображение заказов в панели администратора. """
+    """Отображение заказов в панели администратора."""
     orders = db.session.scalars(sa.select(Order).order_by(Order.id.desc()))
     orders_dict = {order: order.customer for order in orders}
     return render_template('admin/orders.html', orders=orders_dict)
@@ -242,7 +242,7 @@ def finish_order(order_number):
 @login_required
 @admin_only
 def users():
-    """Отображение пользователей в панели администратора. """
+    """Отображение пользователей в панели администратора."""
     users = db.session.scalars(sa.select(User).order_by(User.username))
     return render_template('admin/users.html', users=users)
 
@@ -297,7 +297,7 @@ def categories():
 @login_required
 @admin_only
 def create_category():
-    """ Отображение страницы создания категории. """
+    """ Отображение страницы создания категории."""
     form = CreateCategoryForm()
     if form.validate_on_submit():
         # Добавление категории в базу

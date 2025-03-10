@@ -4,6 +4,7 @@ from wtforms.validators import DataRequired, Length
 
 
 class LoginForm(FlaskForm):
+    """Форма авторизации."""
     username = StringField('Имя пользователя', validators=[DataRequired(),
                                                            Length(max=64)])
     password = PasswordField('Пароль', validators=[DataRequired()])

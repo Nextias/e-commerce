@@ -1,10 +1,12 @@
-import phonenumbers
+import re
+
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired, Length, ValidationError
 
 
 class EditProfileForm(FlaskForm):
+    """Форма редактирования профиля."""
     first_name = StringField('Имя', validators=[DataRequired(),
                                                 Length(max=30)])
     last_name = StringField('Фамилия', validators=[DataRequired(),
@@ -18,13 +20,8 @@ class EditProfileForm(FlaskForm):
     submit = SubmitField('Подтвердить')
 
     def validate_phone_number(form, field):
-        if len(field.data) > 16:
-            raise ValidationError('Неверный номер телефона.')
-        try:
-            input_number = phonenumbers.parse(field.data)
-            if not (phonenumbers.is_valid_number(input_number)):
-                raise ValidationError('Неверный номер телефона.')
-        except ValidationError:
-            input_number = phonenumbers.parse("+1"+field.data)
-            if not (phonenumbers.is_valid_number(input_number)):
-                raise ValidationError('Неверный номер телефона.')
+        """Валидация телефонного номера."""
+        phone_pattern = re.compile(r'^\+?[0-9\s\-]{7,}$')
+
+        if not phone_pattern.match(field.data):
+            raise ValidationError('Неверный формат номера.')

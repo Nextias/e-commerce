@@ -19,7 +19,7 @@ categories = sa.Table(
 
 
 class BasketProduct(db.Model):  # type: ignore[name-defined]
-    """ Модель БД таблица Many-To-Many продуктов в корзине. """
+    """Модель БД таблица Many-To-Many продуктов в корзине."""
     __tablename__ = 'basket_products'
 
     basket_id: so.Mapped[int] = so.mapped_column(db.Integer, db.ForeignKey(
@@ -28,19 +28,27 @@ class BasketProduct(db.Model):  # type: ignore[name-defined]
         'product.id'), primary_key=True)
     amount: so.Mapped[int] = so.mapped_column(db.Integer, default=1)
 
+    def __repr__(self):
+        return (f'<BasketProduct basket_id={self.basket_id},'
+                f' product_id={self.product_id}), amount={self.amount}>')
+
 
 class Role(db.Model):  # type: ignore[name-defined]
-    """ Модель БД таблица role. """
+    """Модель БД таблица role."""
     __tablename__ = 'role'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     name: so.Mapped[str] = so.mapped_column(sa.String(20), unique=True,
                                             index=True)
-    users: so.Mapped[List['User']] = so.relationship(back_populates='role')
+    users: so.Mapped[List['User']] = so.relationship(back_populates='role',
+                                                     order_by='User.id.desc()')
+
+    def __repr__(self):
+        return f'<Role {self.name}>'
 
 
 class User(UserMixin, db.Model):  # type: ignore[name-defined]
-    """ Модель БД таблица user. """
+    """Модель БД таблица user."""
     __tablename__ = 'user'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
@@ -75,18 +83,18 @@ class User(UserMixin, db.Model):  # type: ignore[name-defined]
         self.set_role()
 
     def __repr__(self):
-        return '<User {}>'.format(self.username)
+        return f'<User {self.username}>'
 
     def set_password(self, password: str) -> None:
-        """ Метод генерации хэша пароля. """
+        """Метод генерации хэша пароля."""
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password: str) -> bool:
-        """ Метод проверки пароля.  """
+        """Метод проверки пароля."""
         return check_password_hash(self.password_hash, password)
 
     def set_role(self, role_name: str = 'user') -> None:
-        """ Назначение роли.
+        """Назначение роли.
 
         Пример использования:
         >>> user = User()
@@ -100,7 +108,7 @@ class User(UserMixin, db.Model):  # type: ignore[name-defined]
         self.role = role
 
     def get_basket(self) -> 'Basket':
-        """ Получение актуальной корзины покупателя, если таковой нету,
+        """Получение актуальной корзины покупателя, если таковой нету,
          то создаётся новая.
 
         Возвращает:
@@ -126,7 +134,7 @@ class User(UserMixin, db.Model):  # type: ignore[name-defined]
 
 
 class Product(db.Model):  # type: ignore[name-defined]
-    """ Модель БД таблица product. """
+    """Модель БД таблица product."""
     __tablename__ = 'product'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
@@ -149,7 +157,7 @@ class Product(db.Model):  # type: ignore[name-defined]
         back_populates='product', order_by='Review.id.desc()')
 
     def __repr__(self):
-        return '<Product {}>'.format(self.name)
+        return f'<Product {self.name}>'
 
     def get_path(self) -> Optional[str]:
         """ Получение пути к изображению продукта. """
@@ -163,7 +171,7 @@ class Product(db.Model):  # type: ignore[name-defined]
 
 
 class Review(db.Model):  # type: ignore[name-defined]
-    """ Модель БД таблица review. """
+    """Модель БД таблица review."""
     __tablename__ = 'review'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
@@ -176,22 +184,27 @@ class Review(db.Model):  # type: ignore[name-defined]
     user: so.Mapped[User] = so.relationship(back_populates='user_reviews')
     product: so.Mapped[Product] = so.relationship(back_populates='reviews')
 
+    def __repr__(self):
+        return (f'<Review user_id={self.user_id},'
+                f' product_id={self.product_id}, rating={self.rating}>')
+
 
 class Category(db.Model):  # type: ignore[name-defined]
-    """ Модель БД таблица category. """
+    """Модель БД таблица category."""
     __tablename__ = 'category'
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     name: so.Mapped[str] = so.mapped_column(sa.String(64), index=True)
     products: so.Mapped[List['Product']] = so.relationship(
         secondary=categories,
-        back_populates='categories')
+        back_populates='categories',
+        order_by='Product.name')
 
     def __repr__(self):
-        return '<Category {}>'.format(self.name)
+        return f'<Category {self.name}>'
 
 
 class Basket(db.Model):  # type: ignore[name-defined]
-    """ Модель БД таблица basket. """
+    """Модель БД таблица basket."""
     __tablename__ = 'basket'
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
@@ -206,6 +219,9 @@ class Basket(db.Model):  # type: ignore[name-defined]
     user: so.Mapped[User] = so.relationship(back_populates='user_baskets')
     order: so.Mapped[Optional['Order']] = so.relationship(
         back_populates='basket')
+
+    def __repr__(self):
+        return f'<Basket user_id={self.user_id}, active={self.active}>'
 
     def get_basket_products(self) -> Dict['Product', int]:
         """ Получение количества товаров в корзине.
@@ -260,7 +276,7 @@ class Basket(db.Model):  # type: ignore[name-defined]
 
 
 class Order(db.Model):  # type: ignore[name-defined]
-    """ Модель БД таблица order. """
+    """Модель БД таблица order."""
     __tablename__ = 'order'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
@@ -288,6 +304,9 @@ class Order(db.Model):  # type: ignore[name-defined]
         super().__init__(*args, **kwargs)
         self.set_status(status_name)
 
+    def __repr__(self):
+        return f'<Order number {self.order_number}>'
+
     def set_status(self, status_name: str = 'Создан') -> None:
         """ Назначение роли.
 
@@ -305,7 +324,7 @@ class Order(db.Model):  # type: ignore[name-defined]
 
 
 class OrderStatus(db.Model):  # type: ignore[name-defined]
-    """ Модель БД таблица order_status. """
+    """Модель БД таблица order_status."""
     __tablename__ = 'order_status'
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     name: so.Mapped[str] = so.mapped_column(sa.String(64), index=True)
@@ -320,5 +339,5 @@ class OrderStatus(db.Model):  # type: ignore[name-defined]
 
 @login.user_loader
 def load_user(id: str) -> Optional[User]:
-    """ Загрузка пользователя для Flask-Login. """
+    """Загрузка пользователя для Flask-Login."""
     return db.session.get(User, int(id))
