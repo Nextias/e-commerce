@@ -3,6 +3,7 @@
 <h2> Поиск товаров </h2>
 <form action="{{ url_for('main.explore') }}" method="GET" class="form-inline my-2 my-lg-0">
     <input type="text" name="q" class="form-control mr-sm-2" placeholder="Поиск товаров..." value="{{ search_query }}">
+    <p></p>
     <button type="submit" class="btn btn-outline-success my-2 my-sm-0">Поиск</button>
 </form>
 <br>

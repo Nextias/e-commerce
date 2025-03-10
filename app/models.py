@@ -67,7 +67,7 @@ class User(UserMixin, db.Model):  # type: ignore[name-defined]
     user_baskets: so.Mapped[List['Basket']] = so.relationship(
         back_populates='user', order_by='Basket.created_at'
     )
-    reviews: so.Mapped[List['Review']] = so.relationship(
+    user_reviews: so.Mapped[List['Review']] = so.relationship(
         back_populates='user')
 
     def __init__(self, *args, **kwargs):
@@ -134,6 +134,7 @@ class Product(db.Model):  # type: ignore[name-defined]
                                             unique=True)
     description: so.Mapped[str] = so.mapped_column(sa.String(140))
     price: so.Mapped[int] = so.mapped_column()
+    rating: so.Mapped[float] = so.mapped_column(nullable=True)
     brand: so.Mapped[Optional[str]] = so.mapped_column(
         sa.String(40), nullable=True, default=None)
     stock: so.Mapped[int] = so.mapped_column(default=0)
@@ -145,7 +146,7 @@ class Product(db.Model):  # type: ignore[name-defined]
         secondary='basket_products',
         back_populates='products')
     reviews: so.Mapped[List['Review']] = so.relationship(
-        back_populates='product')
+        back_populates='product', order_by='Review.id.desc()')
 
     def __repr__(self):
         return '<Product {}>'.format(self.name)
@@ -153,6 +154,12 @@ class Product(db.Model):  # type: ignore[name-defined]
     def get_path(self) -> Optional[str]:
         """ Получение пути к изображению продукта. """
         return self.photo_path
+
+    def update_rating(self):
+        """Обновление рейтинга товара."""
+        reviews = self.reviews
+        self.rating = round((sum(review.rating for review in reviews)
+                             / len(reviews)), 2)
 
 
 class Review(db.Model):  # type: ignore[name-defined]
@@ -167,10 +174,7 @@ class Review(db.Model):  # type: ignore[name-defined]
     product_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Product.id),
                                                   index=True)
     user: so.Mapped[User] = so.relationship(back_populates='user_reviews')
-    product: so.Mapped[Product] = so.relationship(back_populates='review')
-
-    def __repr__(self):
-        return '<Product {}>'.format(self.name)
+    product: so.Mapped[Product] = so.relationship(back_populates='reviews')
 
 
 class Category(db.Model):  # type: ignore[name-defined]

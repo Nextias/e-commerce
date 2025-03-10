@@ -2,7 +2,7 @@ import unittest
 
 from app import create_app, db
 from app.models import (Basket, Category, Order, OrderStatus,
-                        Product, Role, User)
+                        Product, Role, User, Review)
 from sqlalchemy.exc import IntegrityError
 from config import TestConfig
 
@@ -554,6 +554,70 @@ class OrderModelCase(unittest.TestCase):
         # Получаем покупателя по заказу
         retrieved_basket = order.basket
         self.assertEqual(retrieved_basket.id, basket.id)
+
+
+class ReviewModelCase(unittest.TestCase):
+    def setUp(self):
+        # Создание объекта приложения
+        self.app = create_app(TestConfig)
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+        db.create_all()
+
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
+        self.app_context.pop()
+
+    def test_review_creation(self):
+        """ Проверка создания отзыва. """
+        # Создание товара
+        product = create_example_product()
+        # Создание пользователя
+        user = create_example_user()
+        # Создание отзыва
+        review = Review(review='review text', user_id=user.id,
+                        product_id=product.id, rating=5)
+        db.session.add(review)
+        db.session.commit()
+        # Получение отзыва из базы данных
+        retrieved_review = Review.query.filter_by(
+            review='review text').first()
+
+        # Проверка, что отзыв был создан корректно
+        self.assertIsNotNone(retrieved_review, "Отзыв не был создан.")
+        self.assertEqual(retrieved_review.review,
+                         'review text', "review text.")
+
+    def test_get_product_by_review(self):
+        """ Проверка получения продукта по ревью. """
+        # Создание товара
+        product = create_example_product()
+        # Создание пользователя
+        user = create_example_user()
+        # Создание отзыва
+        review = Review(review='review text', user_id=user.id,
+                        product_id=product.id, rating=5)
+        db.session.add(review)
+        db.session.commit()
+        # Получение продукта
+        product = review.product
+        self.assertIsNotNone(product)
+
+    def test_get_user_by_review(self):
+        """ Проверка получения пользователя по ревью. """
+        # Создание товара
+        product = create_example_product()
+        # Создание пользователя
+        user = create_example_user()
+        # Создание отзыва
+        review = Review(review='review text', user_id=user.id,
+                        product_id=product.id, rating=5)
+        db.session.add(review)
+        db.session.commit()
+        # Получение отзыва
+        user = review.user
+        self.assertIsNotNone(user)
 
 
 if __name__ == '__main__':

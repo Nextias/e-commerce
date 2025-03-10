@@ -12,9 +12,10 @@ from app.forms.ConfirmOrderForm import ConfirmOrderForm
 from app.forms.FinishOrderForm import FinishOrderForm
 from app.forms.CreateCategoryForm import CreateCategoryForm
 from app.forms.EditCategoryForm import EditCategoryForm
+from app.forms.ReviewForm import ReviewForm
 
 __all__ = ['LoginForm', 'RegistrationForm', 'UploadForm', 'EditProfileForm',
            'CheckoutForm', 'SubmitOrderForm', 'CancelOrderForm',
            'CreateProductForm', 'EditStockForm', 'EditProductForm',
            'ConfirmOrderForm', 'FinishOrderForm', 'CreateCategoryForm',
-           'EditCategoryForm']
+           'EditCategoryForm', 'ReviewForm']

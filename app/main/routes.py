@@ -6,9 +6,9 @@ from flask_login import current_user, login_required
 from app import db
 from app.forms import (CancelOrderForm, CheckoutForm, ConfirmOrderForm,
                        EditProfileForm, EditStockForm, FinishOrderForm,
-                       SubmitOrderForm, UploadForm, ReviewForm)
+                       ReviewForm, SubmitOrderForm, UploadForm)
 from app.main import bp
-from app.models import Basket, BasketProduct, Order, Product
+from app.models import Basket, BasketProduct, Order, Product, Review
 
 
 @bp.route('/', methods=('GET', 'POST'))
@@ -24,12 +24,27 @@ def index():
 @login_required
 def product(id):
     """ Отображение информации о товаре по id."""
-    form = UploadForm()
-    edit_stock_form = EditStockForm()
-    review_form = ReviewForm()
     product = db.session.get(Product, int(id))
     if product is None:  # Продукт не найден
         abort(404)
+    form = UploadForm()
+    edit_stock_form = EditStockForm()
+    review_form = ReviewForm()
+    if review_form.validate_on_submit():  # Если был написан отзыв
+        previous_review = db.session.scalar(
+            sa.select(Review)
+            .where(Review.user_id == current_user.id,
+                   Review.product_id == product.id))
+        if previous_review:  # Удаление старого отзыва на товар
+            db.session.delete(previous_review)
+        # Создание нового отзыва
+        rating = int(review_form.rating.data)
+        review_text = review_form.review.data
+        review = Review(user_id=current_user.id, product_id=product.id,
+                        rating=rating, review=review_text)
+        db.session.add(review)
+        product.update_rating()  # Обновление среднего рейтинга товара
+        db.session.commit()
     # Получение количества заданного продукта в корзине
     basket = current_user.get_basket()
     basket_item = db.session.scalar(sa.select(BasketProduct).where(
@@ -40,7 +55,7 @@ def product(id):
     return render_template('main/product.html', product=product,
                            categories=product.categories, amount=amount,
                            form=form, edit_stock_form=edit_stock_form,
-                           review_form=review_form)
+                           review_form=review_form, reviews=product.reviews)
 
 
 @bp.route('/profile', methods=('GET', 'POST'))

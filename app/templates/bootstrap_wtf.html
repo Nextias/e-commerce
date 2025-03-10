@@ -5,6 +5,7 @@
     {{ field.label(class='form-check-label') }}
   </div>
   {%- elif field.type == 'RadioField' %}
+  <div class="d-flex flex-row gap-2 mb-3">
     {{ field.label(class='form-label') }}
     {%- for item in field %}
     <div class="form-check{% if loop.last %} mb-3{% endif %}">
@@ -12,6 +13,7 @@
       {{ item.label(class='form-check-label') }}
     </div>
     {%- endfor %}
+  </div>
   {%- elif field.type == 'FileField' %}
   <div class="mb-3">
     {{ field.label(class='form-label') }}
