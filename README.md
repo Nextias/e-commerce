@@ -16,7 +16,7 @@
 ## Установка и настройка
 
 1. **Клонируйте репозиторий:**
-
+git clone https://github.com/Nextias/e-commerce.git
 2. **Создайте виртуальное окружение:**
 python -m venv venv
 source venv/bin/activate  # Для Linux/MacOS
