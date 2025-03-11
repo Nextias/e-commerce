@@ -26,6 +26,8 @@ def create_app(config_class=Config):
     user_activity = app.after_request(user_activity)
     from app.admin import bp
     app.register_blueprint(bp)
+    from app.errors import bp
+    app.register_blueprint(bp)
     # Связка экземпляров с приложением
     db.init_app(app)
     login.init_app(app)
